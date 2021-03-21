@@ -247,6 +247,17 @@ public class TotemHelper {
     @Nonnull
     public static Optional<TotemTileEntity> getTotemNearPos(ServerWorld world, BlockPos posSource, boolean mustBeLoaded) {
         Optional<BlockPos> posOpt = getTotemPosNearPos(world, posSource);
+        return getTotemAtPos(posOpt, world, mustBeLoaded);
+    }
+
+    @Nonnull
+    public static Optional<TotemTileEntity> getTotemAtPos(ServerWorld world, Collection<PointOfInterest> poi) {
+        Optional<BlockPos> s = getTotemPosition(poi);
+        return getTotemAtPos(s, world, true);
+    }
+
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public static Optional<TotemTileEntity> getTotemAtPos(Optional<BlockPos> posOpt, ServerWorld world, boolean mustBeLoaded) {
         if (mustBeLoaded) {
             posOpt = posOpt.filter(pos -> world.getChunkProvider().isChunkLoaded(new ChunkPos(pos)));
         }

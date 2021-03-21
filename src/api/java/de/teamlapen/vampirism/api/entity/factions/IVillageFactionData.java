@@ -7,8 +7,11 @@ import net.minecraft.block.Blocks;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
@@ -56,4 +59,19 @@ public interface IVillageFactionData {
 
     @Nullable
     EntityType<? extends ITaskMasterEntity> getTaskMasterEntity();
+
+    @Nonnull
+    default ItemStack getBanner() {
+        return ItemStack.EMPTY;
+    }
+
+    @Nullable
+    default Pair<EntityType<?>, int[]> getRaidWaveEntity(FactionRaidWaveMember waveMember) {
+        return null;
+    }
+
+    default int getRaidWaveCount(FactionRaidWaveMember member, int wave) {
+        Pair<EntityType<?>, int[]> data = getRaidWaveEntity(member);
+        return data != null ? data.getValue()[MathHelper.clamp(wave, 0, data.getValue().length) - 1] : 0;
+    }
 }

@@ -17,6 +17,7 @@ import de.teamlapen.vampirism.util.Permissions;
 import de.teamlapen.vampirism.util.REFERENCE;
 import de.teamlapen.vampirism.world.MinionWorldData;
 import de.teamlapen.vampirism.world.VampirismWorld;
+import de.teamlapen.vampirism.world.raid.FactionRaidManager;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Util;
@@ -135,6 +136,6 @@ public class ModEventHandler {
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.END) return;
         MinionWorldData.getData(ServerLifecycleHooks.getCurrentServer()).tick();
-
+        ServerLifecycleHooks.getCurrentServer().getWorlds().forEach(world -> FactionRaidManager.getManager(world).tick());
     }
 }

@@ -69,16 +69,11 @@ public interface IFactionRegistry {
     Predicate<LivingEntity> getPredicate(IFaction<?> thisFaction, boolean player, boolean mob, boolean neutralPlayer, boolean ignoreDisguise, @Nullable IFaction<?> otherFaction);
 
     /**
-     * Create and registerAdvancements a non playable faction. Must be called before InterModProccessEvent e.g. during InterModEnqueueEvent
-     *
-     * @param id              Faction id e.g. for level command
-     * @param entityInterface Interface all entities implement
-     * @param color           Color e.g. for level rendering
-     * @param <T>             Interface all entities implement
-     * @return The created faction
+     * @see #registerFaction(ResourceLocation, Class, Color, boolean, IVillageFactionData)
      */
+    @Deprecated
     @ThreadSafeAPI
-    <T extends IFactionEntity> IFaction registerFaction(ResourceLocation id, Class<T> entityInterface, Color color, boolean hostileTowardsNeutral);
+    <T extends IFactionEntity> IFaction registerFaction(ResourceLocation id, Class<T> entityInterface, Color color, boolean hostileTowardsNeutral);//TODO 1.17 remove
 
     /**
      * Create and registerAdvancements a non playable faction. Must be called before InterModProccessEvent e.g. during InterModEnqueueEvent
@@ -94,21 +89,11 @@ public interface IFactionRegistry {
     <T extends IFactionEntity> IFaction registerFaction(ResourceLocation id, Class<T> entityInterface, Color color, boolean hostileTowardsNeutral, @Nullable IVillageFactionData villageFactionData);
 
     /**
-     * Use {@link IFactionRegistry#registerPlayableFaction(ResourceLocation, Class, Color, boolean, NonNullSupplier, int, int, BiFunction, IVillageFactionData)} instead
-     * <p>
-     * Create and registerAdvancements a playable faction. Must be called before InterModProccessEvent e.g. during InterModEnqueueEvent
-     *
-     * @param id                       Faction id e.g. for level command
-     * @param entityInterface          Interface all entities or (the given capability for players) implement
-     * @param color                    Color e.g. for level rendering
-     * @param playerCapabilitySupplier The capability which is attached to all players
-     * @param highestLevel             The highest reachable player level
-     * @param <T>                      Interface all entities or (the given capability for players)  implement
-     * @return The created faction
+     * @see #registerPlayableFaction(ResourceLocation, Class, Color, boolean, NonNullSupplier, int, int, BiFunction, IVillageFactionData)
      */
     @Deprecated
     @ThreadSafeAPI
-    <T extends IFactionPlayer<?>> IPlayableFaction<T> registerPlayableFaction(ResourceLocation id, Class<T> entityInterface, Color color, boolean hostileTowardsNeutral, NonNullSupplier<Capability<T>> playerCapabilitySupplier, int highestLevel);
+    <T extends IFactionPlayer<?>> IPlayableFaction<T> registerPlayableFaction(ResourceLocation id, Class<T> entityInterface, Color color, boolean hostileTowardsNeutral, NonNullSupplier<Capability<T>> playerCapabilitySupplier, int highestLevel); //TODO 1.17 remove
 
     /**
      * Create and registerAdvancements a playable faction. Must be called before InterModProccessEvent e.g. during InterModEnqueueEvent

@@ -3,22 +3,39 @@ package de.teamlapen.vampirism.util;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.entity.CaptureEntityEntry;
 import de.teamlapen.vampirism.api.entity.ITaskMasterEntity;
-import de.teamlapen.vampirism.api.entity.factions.IVillageFactionData;
+import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
 import de.teamlapen.vampirism.core.ModBlocks;
 import de.teamlapen.vampirism.core.ModEntities;
 import de.teamlapen.vampirism.core.ModVillage;
 import de.teamlapen.vampirism.entity.hunter.HunterBaseEntity;
+import de.teamlapen.vampirism.world.village.VillageData;
 import net.minecraft.block.Block;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
+import net.minecraft.item.DyeColor;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.tileentity.BannerPattern;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
-public class HunterVillageData implements IVillageFactionData {
+public class HunterVillageData extends VillageData {
+
+    public static final ItemStack banner = createBanner();
 
     private List<CaptureEntityEntry> captureEntityEntries;
+
+    public HunterVillageData() {
+        super(banner);
+        this.add(FactionRaidWaveMember.STANDARD, ModEntities.hunter, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
+        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_hunter, new int[]{2, 2, 2, 2, 2, 2, 2, 2});
+    }
 
     @Override
     public Class<? extends MobEntity> getGuardSuperClass() {
@@ -46,5 +63,15 @@ public class HunterVillageData implements IVillageFactionData {
     @Override
     public EntityType<? extends ITaskMasterEntity> getTaskMasterEntity() {
         return ModEntities.task_master_hunter;
+    }
+
+    public static ItemStack createBanner() {
+        ItemStack itemStack = new ItemStack(Items.BLUE_BANNER);
+        CompoundNBT compoundNBT = itemStack.getOrCreateChildTag("BlockEntityTag");
+        ListNBT listNBT = new BannerPattern.Builder().setPatternWithColor(BannerPattern.STRIPE_SMALL, DyeColor.BLACK).setPatternWithColor(BannerPattern.STRIPE_CENTER, DyeColor.BLACK).setPatternWithColor(BannerPattern.BORDER, DyeColor.WHITE).setPatternWithColor(BannerPattern.STRIPE_MIDDLE, DyeColor.BLACK).setPatternWithColor(BannerPattern.CURLY_BORDER, DyeColor.BLACK).setPatternWithColor(BannerPattern.STRAIGHT_CROSS, DyeColor.WHITE).buildNBT();
+        compoundNBT.put("Pattern", listNBT);
+        itemStack.func_242395_a(ItemStack.TooltipDisplayFlags.ADDITIONAL);
+        itemStack.setDisplayName(new TranslationTextComponent("block.minecraft.ominous_banner").mergeStyle(TextFormatting.GOLD));
+        return itemStack;
     }
 }
