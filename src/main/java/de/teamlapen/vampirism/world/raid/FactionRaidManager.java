@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.world.raid;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.VampirismAPI;
 import de.teamlapen.vampirism.api.entity.factions.IFaction;
+import de.teamlapen.vampirism.api.entity.factions.IFactionRaidEntity;
 import de.teamlapen.vampirism.api.entity.factions.IPlayableFaction;
 import de.teamlapen.vampirism.entity.factions.FactionPlayerHandler;
 import de.teamlapen.vampirism.tileentity.TotemHelper;
@@ -13,7 +14,6 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.play.server.SEntityStatusPacket;
-import net.minecraft.potion.Effects;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
@@ -86,7 +86,7 @@ public class FactionRaidManager extends WorldSavedData {
 
     @SuppressWarnings("ConstantConditions")
     @Nullable
-    public FactionRaid<?> factionAttackTick(ServerPlayerEntity playerEntity) {
+    public FactionRaid<?> badOmenTick(ServerPlayerEntity playerEntity) {
         FactionPlayerHandler handler = FactionPlayerHandler.getOpt(playerEntity).orElse(null);
         IPlayableFaction<?> faction = handler == null ? null : handler.getCurrentFaction();
         if (faction == null) {
@@ -132,7 +132,8 @@ public class FactionRaidManager extends WorldSavedData {
                 } else {
                     blockPos1 = blockPos;
                 }
-                FactionRaid<?> raid = this.findOrCreateRaid(playerEntity.getServerWorld(), blockPos1, faction);
+                IPlayableFaction<?> attackingFaction = getRandomAttackingFaction(faction);
+                FactionRaid<?> raid = this.findOrCreateRaid(playerEntity.getServerWorld(), blockPos1, attackingFaction, faction);
                 boolean flag = false;
                 if (!raid.isStarted()) {
                     if (!this.byId.containsKey(raid.getId())) {
@@ -143,7 +144,7 @@ public class FactionRaidManager extends WorldSavedData {
                 } else if (raid.getBadOmenLevel() < raid.getMaxLevel()) {
                     flag = true;
                 } else {
-                    playerEntity.removePotionEffect(Effects.BAD_OMEN);//TODO change
+                    playerEntity.removePotionEffect(attackingFaction.getVillageData().getBadOmenEffect());//TODO change
                     playerEntity.connection.sendPacket(new SEntityStatusPacket(playerEntity, ((byte) 43)));
                 }
 
@@ -162,13 +163,16 @@ public class FactionRaidManager extends WorldSavedData {
         }
     }
 
-    private FactionRaid<?> findOrCreateRaid(ServerWorld world, BlockPos pos, IPlayableFaction<?> faction) {
+    private IPlayableFaction<?> getRandomAttackingFaction(IPlayableFaction<?> defendingFaction) {
+        List<IPlayableFaction<?>> factions = Lists.newArrayList(VampirismAPI.factionRegistry().getPlayableFactions());
+        factions.remove(defendingFaction);
+        return factions.get(world.getRandom().nextInt(factions.size() - 1));
+    }
+
+    private FactionRaid<?> findOrCreateRaid(ServerWorld world, BlockPos pos, IPlayableFaction<?> attackingFaction, IPlayableFaction<?> defendingFaction) {
         FactionRaid<?> raid = findRaid(pos, 9216);
         if (raid != null) return raid;
-
-        List<IPlayableFaction<?>> factions = Lists.newArrayList(VampirismAPI.factionRegistry().getPlayableFactions());
-        factions.remove(faction);
-        return new FactionRaid<>(this.incrementNextId(), world, pos, factions.get(world.getRandom().nextInt(factions.size() - 1)), faction);
+        return new FactionRaid<>(this.incrementNextId(), world, pos, attackingFaction, defendingFaction);
     }
 
     @Override

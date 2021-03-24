@@ -8,6 +8,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Effect;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -62,16 +63,21 @@ public interface IVillageFactionData {
 
     @Nonnull
     default ItemStack getBanner() {
-        return ItemStack.EMPTY;
+        return ItemStack.EMPTY; //TODO 1.17 move to INSTANCE
     }
 
     @Nullable
-    default Pair<EntityType<?>, int[]> getRaidWaveEntity(FactionRaidWaveMember waveMember) {
-        return null;
+    default <T extends MobEntity & IFactionRaidEntity> Pair<EntityType<T>, int[]> getRaidWaveEntity(FactionRaidWaveMember waveMember) {
+        return null; //TODO 1.17 move to INSTANCE
     }
 
-    default int getRaidWaveCount(FactionRaidWaveMember member, int wave) {
-        Pair<EntityType<?>, int[]> data = getRaidWaveEntity(member);
+    default <T extends MobEntity & IFactionRaidEntity> int getRaidWaveCount(FactionRaidWaveMember member, int wave) {
+        Pair<EntityType<T>, int[]> data = getRaidWaveEntity(member);
         return data != null ? data.getValue()[MathHelper.clamp(wave, 0, data.getValue().length) - 1] : 0;
+    }
+
+    @Nullable
+    default Effect getBadOmenEffect() {
+        return null;
     }
 }

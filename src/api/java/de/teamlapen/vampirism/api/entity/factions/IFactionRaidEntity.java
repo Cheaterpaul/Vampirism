@@ -1,9 +1,9 @@
-package de.teamlapen.vampirism.world.raid;
+package de.teamlapen.vampirism.api.entity.factions;
 
 public interface IFactionRaidEntity {
     boolean canJoinRaid();
 
-    void setRaid(FactionRaid<?> factionRaid);
+    void setRaid(IFactionRaid<?> factionRaid);
 
     void setWave(int wave);
 

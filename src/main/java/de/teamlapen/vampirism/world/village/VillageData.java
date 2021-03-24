@@ -1,8 +1,10 @@
 package de.teamlapen.vampirism.world.village;
 
 import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
+import de.teamlapen.vampirism.api.entity.factions.IFactionRaidEntity;
 import de.teamlapen.vampirism.api.entity.factions.IVillageFactionData;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.item.ItemStack;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -20,15 +22,19 @@ public abstract class VillageData implements IVillageFactionData {
         this.banner = banner;
     }
 
-    public VillageData add(FactionRaidWaveMember member, EntityType<?> type, int[] waveCount) {
+    /**
+     * @throws ClassCastException if type is not instance of MobEntity
+     */
+    public <T extends MobEntity & IFactionRaidEntity> VillageData add(FactionRaidWaveMember member, EntityType<T> type, int[] waveCount) {
         members.put(member, Pair.of(type, waveCount));
         return this;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
-    public Pair<EntityType<?>, int[]> getRaidWaveEntity(FactionRaidWaveMember waveMember) {
-        return members.get(waveMember);
+    public <T extends MobEntity & IFactionRaidEntity> Pair<EntityType<T>, int[]> getRaidWaveEntity(FactionRaidWaveMember waveMember) {
+        return ((Pair<EntityType<T>, int[]>) (Object) members.get(waveMember));
     }
 
     @Nonnull

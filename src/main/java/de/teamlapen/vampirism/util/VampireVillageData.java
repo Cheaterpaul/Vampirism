@@ -3,8 +3,8 @@ package de.teamlapen.vampirism.util;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.entity.CaptureEntityEntry;
 import de.teamlapen.vampirism.api.entity.ITaskMasterEntity;
-import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
 import de.teamlapen.vampirism.core.ModBlocks;
+import de.teamlapen.vampirism.core.ModEffects;
 import de.teamlapen.vampirism.core.ModEntities;
 import de.teamlapen.vampirism.core.ModVillage;
 import de.teamlapen.vampirism.entity.vampire.VampireBaseEntity;
@@ -18,11 +18,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.potion.Effect;
 import net.minecraft.tileentity.BannerPattern;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class VampireVillageData extends VillageData {
@@ -33,9 +35,9 @@ public class VampireVillageData extends VillageData {
 
     public VampireVillageData() {
         super(banner);
-        this.add(FactionRaidWaveMember.STANDARD, ModEntities.vampire, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
-        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_vampire, new int[]{2, 2, 2, 1, 2, 2, 2, 1});
-        this.add(FactionRaidWaveMember.BEAST, ModEntities.vampire_baron, new int[]{0, 0, 0, 1, 0, 0, 0, 1});
+//        this.add(FactionRaidWaveMember.STANDARD, ModEntities.vampire, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
+//        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_vampire, new int[]{2, 2, 2, 1, 2, 2, 2, 1});
+//        this.add(FactionRaidWaveMember.BEAST, ModEntities.vampire_baron, new int[]{0, 0, 0, 1, 0, 0, 0, 1});
     }
 
     @Override
@@ -56,6 +58,7 @@ public class VampireVillageData extends VillageData {
         return VampireBaseEntity.class;
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public Pair<Block, Block> getTotemTopBlock() {
         return Pair.of(ModBlocks.totem_top_vampirism_vampire, ModBlocks.totem_top_vampirism_vampire_crafted);
@@ -75,5 +78,11 @@ public class VampireVillageData extends VillageData {
         itemStack.func_242395_a(ItemStack.TooltipDisplayFlags.ADDITIONAL);
         itemStack.setDisplayName(new TranslationTextComponent("block.minecraft.ominous_banner").mergeStyle(TextFormatting.GOLD));
         return itemStack;
+    }
+
+    @Nullable
+    @Override
+    public Effect getBadOmenEffect() {
+        return ModEffects.bad_omen_vampirism_vampire;
     }
 }

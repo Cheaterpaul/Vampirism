@@ -3,8 +3,8 @@ package de.teamlapen.vampirism.util;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.entity.CaptureEntityEntry;
 import de.teamlapen.vampirism.api.entity.ITaskMasterEntity;
-import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
 import de.teamlapen.vampirism.core.ModBlocks;
+import de.teamlapen.vampirism.core.ModEffects;
 import de.teamlapen.vampirism.core.ModEntities;
 import de.teamlapen.vampirism.core.ModVillage;
 import de.teamlapen.vampirism.entity.hunter.HunterBaseEntity;
@@ -18,11 +18,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
+import net.minecraft.potion.Effect;
 import net.minecraft.tileentity.BannerPattern;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.TranslationTextComponent;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class HunterVillageData extends VillageData {
@@ -33,8 +35,8 @@ public class HunterVillageData extends VillageData {
 
     public HunterVillageData() {
         super(banner);
-        this.add(FactionRaidWaveMember.STANDARD, ModEntities.hunter, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
-        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_hunter, new int[]{2, 2, 2, 2, 2, 2, 2, 2});
+//        this.add(FactionRaidWaveMember.STANDARD, ModEntities.hunter, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
+//        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_hunter, new int[]{2, 2, 2, 2, 2, 2, 2, 2});
     }
 
     @Override
@@ -55,6 +57,7 @@ public class HunterVillageData extends VillageData {
         return this.captureEntityEntries;
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public Pair<Block, Block> getTotemTopBlock() {
         return Pair.of(ModBlocks.totem_top_vampirism_hunter, ModBlocks.totem_top_vampirism_hunter_crafted);
@@ -73,5 +76,11 @@ public class HunterVillageData extends VillageData {
         itemStack.func_242395_a(ItemStack.TooltipDisplayFlags.ADDITIONAL);
         itemStack.setDisplayName(new TranslationTextComponent("block.minecraft.ominous_banner").mergeStyle(TextFormatting.GOLD));
         return itemStack;
+    }
+
+    @Nullable
+    @Override
+    public Effect getBadOmenEffect() {
+        return ModEffects.bad_omen_vampirism_hunter;
     }
 }

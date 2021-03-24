@@ -1,5 +1,7 @@
 package de.teamlapen.vampirism.core;
 
+import de.teamlapen.vampirism.api.VReference;
+import de.teamlapen.vampirism.api.entity.factions.IFaction;
 import de.teamlapen.vampirism.potion.*;
 import de.teamlapen.vampirism.util.REFERENCE;
 import de.teamlapen.vampirism.util.SRGNAMES;
@@ -18,6 +20,7 @@ import static de.teamlapen.lib.lib.util.UtilLib.getNull;
  */
 @ObjectHolder(REFERENCE.MODID)
 public class ModEffects {
+    private static final Logger LOGGER = LogManager.getLogger();
 
     public static final Effect sanguinare = getNull();
     public static final Effect thirst = getNull();
@@ -28,7 +31,9 @@ public class ModEffects {
     public static final Effect garlic = getNull();
     public static final Effect poison = getNull();
     public static final Effect freeze = getNull();
-    private static final Logger LOGGER = LogManager.getLogger(ModEffects.class);
+    public static final Effect bad_omen_vampirism_hunter = getNull();
+    public static final Effect bad_omen_vampirism_vampire = getNull();
+
     private static Effect modded_night_vision;  //Substituted version
     private static Effect vanilla_night_vision; //Vanilla night vision instance
 
@@ -45,6 +50,18 @@ public class ModEffects {
         registry.register(new VampirismEffect("garlic", EffectType.HARMFUL, 0xFFFFFF));
         registry.register(new PotionPoison("poison", 0x4E9331));
         registry.register(new PotionFreeze("freeze"));
+        registry.register(new BadOmen(REFERENCE.MODID, REFERENCE.HUNTER_PLAYER_KEY) {
+            @Override
+            public IFaction<?> getFaction() {
+                return VReference.HUNTER_FACTION;
+            }
+        });
+        registry.register(new BadOmen(REFERENCE.MODID, REFERENCE.VAMPIRE_PLAYER_KEY) {
+            @Override
+            public IFaction<?> getFaction() {
+                return VReference.VAMPIRE_FACTION;
+            }
+        });
     }
 
     static void fixNightVisionEffecTypes() {

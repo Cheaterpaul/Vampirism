@@ -3,9 +3,7 @@ package de.teamlapen.vampirism.world.raid;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.teamlapen.vampirism.api.VampirismAPI;
-import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
-import de.teamlapen.vampirism.api.entity.factions.IFaction;
-import de.teamlapen.vampirism.api.entity.factions.IVillageFactionData;
+import de.teamlapen.vampirism.api.entity.factions.*;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.*;
@@ -15,6 +13,7 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.play.server.SPlaySoundEffectPacket;
+import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.stats.Stats;
@@ -42,7 +41,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class FactionRaid<T extends MobEntity & IFactionRaidEntity> {
+public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IFactionRaid<T> {
     private static final ITextComponent RAID = new TranslationTextComponent("event.minecraft.raid");
     private static final ITextComponent VICTORY = new TranslationTextComponent("event.minecraft.raid.victory");
     private static final ITextComponent DEFEAT = new TranslationTextComponent("event.minecraft.raid.defeat");
@@ -179,12 +178,13 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> {
     }
 
     public void increaseLevel(ServerPlayerEntity playerEntity) {
-        if (playerEntity.isPotionActive(Effects.BAD_OMEN)) {//TODO new effect
+        Effect effect = this.attackingFaction.getVillageData().getBadOmenEffect();
+        if (playerEntity.isPotionActive(effect)) {//TODO new effect
             this.badOmenLevel += playerEntity.getActivePotionEffect(Effects.BAD_OMEN).getAmplifier() + 1;
             this.badOmenLevel = MathHelper.clamp(this.badOmenLevel, 0, this.getMaxLevel());
         }
 
-        playerEntity.removePotionEffect(Effects.BAD_OMEN);
+        playerEntity.removePotionEffect(effect);
     }
 
     public void stop() {
