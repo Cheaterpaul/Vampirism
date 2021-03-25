@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.util;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.entity.CaptureEntityEntry;
 import de.teamlapen.vampirism.api.entity.ITaskMasterEntity;
+import de.teamlapen.vampirism.api.entity.factions.FactionRaidWaveMember;
 import de.teamlapen.vampirism.core.ModBlocks;
 import de.teamlapen.vampirism.core.ModEffects;
 import de.teamlapen.vampirism.core.ModEntities;
@@ -35,7 +36,7 @@ public class VampireVillageData extends VillageData {
 
     public VampireVillageData() {
         super(banner);
-//        this.add(FactionRaidWaveMember.STANDARD, ModEntities.vampire, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
+        this.add(FactionRaidWaveMember.STANDARD, ModEntities.vampire, new int[]{4, 4, 4, 4, 4, 4, 4, 4});
 //        this.add(FactionRaidWaveMember.ADVANCED, ModEntities.advanced_vampire, new int[]{2, 2, 2, 1, 2, 2, 2, 1});
 //        this.add(FactionRaidWaveMember.BEAST, ModEntities.vampire_baron, new int[]{0, 0, 0, 1, 0, 0, 0, 1});
     }

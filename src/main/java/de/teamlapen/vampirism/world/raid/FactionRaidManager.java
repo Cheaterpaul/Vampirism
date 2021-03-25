@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.world.raid;
 import com.google.common.collect.Lists;
 import de.teamlapen.vampirism.api.VampirismAPI;
 import de.teamlapen.vampirism.api.entity.factions.IFaction;
+import de.teamlapen.vampirism.api.entity.factions.IFactionRaid;
 import de.teamlapen.vampirism.api.entity.factions.IFactionRaidEntity;
 import de.teamlapen.vampirism.api.entity.factions.IPlayableFaction;
 import de.teamlapen.vampirism.entity.factions.FactionPlayerHandler;
@@ -76,7 +77,7 @@ public class FactionRaidManager extends WorldSavedData {
         }
     }
 
-    public static <T extends LivingEntity & IFactionRaidEntity> boolean canJoinRaid(T entity, FactionRaid<?> raid) {
+    public static <T extends LivingEntity & IFactionRaidEntity> boolean canJoinRaid(T entity, IFactionRaid<?> raid) {
         if (entity != null && raid != null && raid.getWorld() != null) {
             return entity.isAlive() && entity.canJoinRaid() && entity.getIdleTime() <= 2400 && entity.world.getDimensionType() == raid.getWorld().getDimensionType();
         } else {
@@ -206,6 +207,11 @@ public class FactionRaidManager extends WorldSavedData {
 
     private int incrementNextId() {
         return ++this.nextAvailableId;
+    }
+
+    @Nullable
+    public FactionRaid<?> findRaid(BlockPos pos) {
+        return findRaid(pos, 9216);
     }
 
     @Nullable

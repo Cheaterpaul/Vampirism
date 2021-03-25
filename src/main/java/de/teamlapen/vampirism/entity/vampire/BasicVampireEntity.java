@@ -8,6 +8,8 @@ import de.teamlapen.vampirism.api.entity.EntityClassType;
 import de.teamlapen.vampirism.api.entity.IEntityLeader;
 import de.teamlapen.vampirism.api.entity.actions.EntityActionTier;
 import de.teamlapen.vampirism.api.entity.actions.IEntityActionUser;
+import de.teamlapen.vampirism.api.entity.factions.IFactionRaid;
+import de.teamlapen.vampirism.api.entity.factions.IFactionRaidEntity;
 import de.teamlapen.vampirism.api.entity.vampire.IBasicVampire;
 import de.teamlapen.vampirism.api.world.ICaptureAttributes;
 import de.teamlapen.vampirism.config.BalanceMobProps;
@@ -25,8 +27,8 @@ import de.teamlapen.vampirism.entity.minion.management.MinionTasks;
 import de.teamlapen.vampirism.entity.minion.management.PlayerMinionController;
 import de.teamlapen.vampirism.util.SharedMonsterAttributes;
 import de.teamlapen.vampirism.world.MinionWorldData;
-import net.minecraft.entity.CreatureEntity;
-import net.minecraft.entity.EntityType;
+import de.teamlapen.vampirism.world.raid.FactionRaidManager;
+import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.monster.PatrollerEntity;
@@ -46,8 +48,11 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.IServerWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
@@ -81,6 +86,9 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
 
     @Override
     public boolean attackEntityFrom(DamageSource damageSource, float amount) {
+        if (this.isRaidActive()) {
+            this.getRaid().updateBarPercentage();
+        }
         boolean flag = super.attackEntityFrom(damageSource, amount);
         if (flag) angryTimer += ANGRY_TICKS_PER_ATTACK;
         return flag;
@@ -253,6 +261,8 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         if (entityActionHandler != null) {
             entityActionHandler.read(tagCompund);
         }
+
+        this.readAdditionalRaid(tagCompund);
     }
 
 
@@ -273,6 +283,7 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         if (this.entityActionHandler != null) {
             this.entityActionHandler.write(nbt);
         }
+        this.writeAdditionalRaid(nbt);
     }
 
     @Override
@@ -282,61 +293,9 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         getDataManager().register(TYPE, -1);
     }
 
-//IMob -------------------------------------------------------------------------------------------------------------
-
-    @Override
-    protected EntityType<?> getIMobTypeOpt(boolean iMob) {
-        return iMob ? ModEntities.vampire_imob : ModEntities.vampire;
-    }
-
-    public static class IMob extends BasicVampireEntity implements net.minecraft.entity.monster.IMob {
-
-        public IMob(EntityType<? extends BasicVampireEntity> type, World world) {
-            super(type, world);
-        }
-
-    }
-    //Entityactions ----------------------------------------------------------------------------------------------------
-    /**
-     * available actions for AI task & task
-     */
-    private final ActionHandlerEntity<?> entityActionHandler;
-    private final EntityClassType entityclass;
-    private final EntityActionTier entitytier;
-
-    @Override
-    public EntityClassType getEntityClass() {
-        return entityclass;
-    }
-
-    @Override
-    public EntityActionTier getEntityTier() {
-        return entitytier;
-    }
-
-    @Override
-    public ActionHandlerEntity getActionHandler() {
-        return entityActionHandler;
-    }
-
-
-
-    private boolean attack;
-
-    @Nullable
-    @Override
-    public ICaptureAttributes getCaptureInfo() {
-        return villageAttributes;
-    }
-
-    @Nullable
-    @Override
-    public AxisAlignedBB getTargetVillageArea() {
-        return villageAttributes == null ? null : villageAttributes.getVillageArea();
-    }
-
     @Override
     public void livingTick() {
+        this.raiderTick();
         super.livingTick();
         if (bloodtimer > 0) {
             bloodtimer--;
@@ -356,12 +315,6 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         if (entityActionHandler != null) {
             entityActionHandler.handle();
         }
-    }
-
-    @Override
-    public void stopVillageAttackDefense() {
-        this.setCustomName(null);
-        this.villageAttributes = null;
     }
 
     protected void updateEntityAttributes() {
@@ -411,16 +364,6 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
     }
 
     @Override
-    public boolean isAttackingVillage() {
-        return villageAttributes != null && attack;
-    }
-
-    @Override
-    public boolean isDefendingVillage() {
-        return villageAttributes != null && !attack;
-    }
-
-    @Override
     protected void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(1, new BreakDoorGoal(this, (difficulty) -> difficulty == net.minecraft.world.Difficulty.HARD));//Only break doors on hard difficulty
@@ -446,7 +389,6 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         this.targetSelector.addGoal(7, new NearestAttackableTargetGoal<>(this, PatrollerEntity.class, 5, true, true, (living) -> UtilLib.isInsideStructure(living, Structure.VILLAGE)));
         this.targetSelector.addGoal(8, new DefendLeaderGoal(this));
     }
-
 
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
@@ -497,4 +439,215 @@ public class BasicVampireEntity extends VampireBaseEntity implements IBasicVampi
         }
         return super.func_230254_b_(player, hand);
     }
+
+    @Override
+    public void onDeath(DamageSource cause) {
+        this.raiderOnDeath(cause);
+        super.onDeath(cause);
+    }
+
+    @Override
+    public boolean canDespawn(double distanceToClosestPlayer) {
+        return this.getRaid() == null && super.canDespawn(distanceToClosestPlayer);
+    }
+
+    @Override
+    public boolean preventDespawn() {
+        return super.preventDespawn() || this.getRaid() != null;
+    }
+
+    @Nullable
+    @Override
+    public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
+        this.setCanJoinRaid(reason == SpawnReason.EVENT);
+        return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+    }
+
+    //-- IMob ----------------------------------------------------------------------------------------------------------
+    @Override
+    protected EntityType<?> getIMobTypeOpt(boolean iMob) {
+        return iMob ? ModEntities.vampire_imob : ModEntities.vampire;
+    }
+
+    public static class IMob extends BasicVampireEntity implements net.minecraft.entity.monster.IMob {
+        public IMob(EntityType<? extends BasicVampireEntity> type, World world) {
+            super(type, world);
+        }
+
+    }
+
+
+    //-- Entityactions -------------------------------------------------------------------------------------------------
+    /**
+     * available actions for AI task & task
+     */
+    private final ActionHandlerEntity<?> entityActionHandler;
+    private final EntityClassType entityclass;
+
+    private final EntityActionTier entitytier;
+
+    @Override
+    public EntityClassType getEntityClass() {
+        return entityclass;
+    }
+
+    @Override
+    public EntityActionTier getEntityTier() {
+        return entitytier;
+    }
+
+    @Override
+    public ActionHandlerEntity getActionHandler() {
+        return entityActionHandler;
+    }
+
+    //-- VillageCapture ------------------------------------------------------------------------------------------------
+
+    private boolean attack;
+
+    @Nullable
+    @Override
+    public ICaptureAttributes getCaptureInfo() {
+        return villageAttributes;
+    }
+
+    @Nullable
+    @Override
+    public AxisAlignedBB getTargetVillageArea() {
+        return villageAttributes == null ? null : villageAttributes.getVillageArea();
+    }
+
+    @Override
+    public void stopVillageAttackDefense() {
+        this.setCustomName(null);
+        this.villageAttributes = null;
+    }
+
+    @Override
+    public boolean isAttackingVillage() {
+        return villageAttributes != null && attack;
+    }
+
+    @Override
+    public boolean isDefendingVillage() {
+        return villageAttributes != null && !attack;
+    }
+
+    //-- FactionRaid ---------------------------------------------------------------------------------------------------
+
+    protected IFactionRaid<?> raid;
+    private int wave;
+    private boolean canJoinRaid;
+    private int joinDelay;
+
+    @Override
+    public boolean canJoinRaid() {
+        return this.canJoinRaid;
+    }
+
+    @Override
+    public IFactionRaid<?> getRaid() {
+        return raid;
+    }
+
+    @Override
+    public void setRaid(IFactionRaid<?> factionRaid) {
+        this.raid = factionRaid;
+    }
+
+    @Override
+    public boolean isRaidActive() {
+        return this.getRaid() != null && this.getRaid().isActive();
+    }
+
+    @Override
+    public void setWave(int wave) {
+        this.wave = wave;
+    }
+
+    @Override
+    public void setCanJoinRaid(boolean b) {
+        this.canJoinRaid = b;
+    }
+
+    @Override
+    public void setJoinDelay(int i) {
+        this.joinDelay = i;
+    }
+
+    @Override
+    public int getJoinDelay() {
+        return this.joinDelay;
+    }
+
+    @Override
+    public int getWave() {
+        return this.wave;
+    }
+
+    @Override
+    public void applyWaveBonus(int wave, boolean b) {
+
+    }
+
+    protected <T extends MobEntity & IFactionRaidEntity> void raiderTick() {
+        if (this.world instanceof ServerWorld && this.isAlive()) {
+            IFactionRaid<?> raid = this.getRaid();
+            if (this.canJoinRaid()) {
+                if (raid == null) {
+                    if (this.world.getGameTime() % 20 == 0) {
+                        IFactionRaid<T> raid1 = (IFactionRaid<T>) FactionRaidManager.getManager((ServerWorld) this.world).findRaid(this.getPosition());
+                        if (raid1 != null && FactionRaidManager.canJoinRaid(this, raid1)) {
+                            raid1.joinRaid(raid1.getGroupsSpawned(), ((T) this), null, true);
+                        }
+                    }
+                } else {
+                    LivingEntity livingEntity = this.getAttackTarget();
+                    if (livingEntity != null && (livingEntity.getType() == EntityType.PLAYER || livingEntity.getType() == EntityType.IRON_GOLEM)) {
+                        this.idleTime = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    protected <T extends MobEntity & IFactionRaidEntity> void raiderOnDeath(DamageSource source) {
+        if (this.world instanceof ServerWorld) {
+            Entity entity = source.getTrueSource();
+            IFactionRaid<T> raid = (IFactionRaid<T>) this.getRaid();
+            if (raid != null) {
+                if (entity != null && entity.getType() == EntityType.PLAYER) {
+                    raid.addHero(entity);
+                    raid.leaveRaid((T) this, false);
+                }
+            }
+        }
+    }
+
+    protected void writeAdditionalRaid(CompoundNBT nbt) {
+        nbt.putInt("wave", this.wave);
+        nbt.putBoolean("can_join_raid", this.canJoinRaid);
+        if (this.raid != null) {
+            nbt.putInt("raid_id", this.raid.getId());
+        }
+    }
+
+    protected <T extends MobEntity & IFactionRaidEntity> void readAdditionalRaid(CompoundNBT nbt) {
+        if (nbt.contains("wave")) {
+            this.wave = nbt.getInt("wave");
+        }
+        if (nbt.contains("can_join_raid")) {
+            this.canJoinRaid = nbt.getBoolean("can_join_raid");
+        }
+        if (nbt.contains("raid_id", 3)) {
+            if (this.world instanceof ServerWorld) {
+                this.raid = FactionRaidManager.getManager(((ServerWorld) this.world)).get(nbt.getInt("raid_id"));
+            }
+
+            if (raid != null) {
+                ((IFactionRaid<T>) this.raid).joinRaid(this.wave, ((T) this), false);
+            }
+        }
+    }
+
 }

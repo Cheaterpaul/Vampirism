@@ -113,34 +113,42 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         this.villageData = this.attackingFaction.getVillageData();
     }
 
+    @Override
     public boolean isOver() {
         return this.isVictory() || this.isLoss();
     }
 
+    @Override
     public boolean isBetweenWaves() {
         return this.alreadySpawned() && this.getRaiderCount() == 0 && this.preRaidTicks > 0;
     }
 
+    @Override
     public boolean isStopped() {
         return this.status == Status.STOPPED;
     }
 
+    @Override
     public boolean isVictory() {
         return this.status == Status.VICTORY;
     }
 
+    @Override
     public boolean isLoss() {
         return this.status == Status.LOSS;
     }
 
+    @Override
     public World getWorld() {
         return this.world;
     }
 
+    @Override
     public boolean isStarted() {
         return this.started;
     }
 
+    @Override
     public int getGroupsSpawned() {
         return groupsSpawned;
     }
@@ -461,6 +469,7 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         this.markDirty();
     }
 
+    @Override
     public void joinRaid(int wave, T raider, @Nullable BlockPos pos, boolean bool) {
         boolean flag = this.joinRaid(wave, raider);
         if (flag) {
@@ -502,6 +511,7 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         return this.raiders.values().stream().mapToInt(Set::size).sum();
     }
 
+    @Override
     public void leaveRaid(T raider, boolean updateHealth) {
         Set<T> set = this.raiders.get(raider.getWave());
         if (set != null) {
@@ -549,7 +559,8 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         return this.joinRaid(wave, raider, true);
     }
 
-    private boolean joinRaid(int wave, T newRaider, boolean modifyHealth) {
+    @Override
+    public boolean joinRaid(int wave, T newRaider, boolean modifyHealth) {
         Set<T> set = this.raiders.computeIfAbsent(wave, wave1 -> new HashSet<>());
         T raider = null;
         for (T existingRaider : set) {
@@ -584,14 +595,16 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         this.leaders.remove(wave);
     }
 
+    @Override
     public BlockPos getCenter() {
-        return null;
+        return this.center;
     }
 
     public void setCenter(BlockPos center) {
         this.center = center;
     }
 
+    @Override
     public int getId() {
         return this.id;
     }
@@ -626,6 +639,7 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         return i > 0 ? random.nextInt(i + 1) : 0;
     }
 
+    @Override
     public boolean isActive() {
         return this.active;
     }
@@ -684,6 +698,7 @@ public class FactionRaid<T extends MobEntity & IFactionRaidEntity> implements IF
         }
     }
 
+    @Override
     public void addHero(Entity entity) {
         this.heroes.add(entity.getUniqueID());
     }

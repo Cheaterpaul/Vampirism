@@ -1,7 +1,11 @@
 package de.teamlapen.vampirism.api.entity.factions;
 
-public interface IFactionRaidEntity {
+public interface IFactionRaidEntity extends IFactionEntity {
     boolean canJoinRaid();
+
+    IFactionRaid<?> getRaid();
+
+    boolean isRaidActive();
 
     void setRaid(IFactionRaid<?> factionRaid);
 
@@ -18,6 +22,8 @@ public interface IFactionRaidEntity {
     int getWave();
 
     void setLeader(boolean b);
+
+    boolean isLeader();
 
     boolean canBeLeader();
 }
