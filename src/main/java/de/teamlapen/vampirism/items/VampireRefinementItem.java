@@ -2,12 +2,14 @@ package de.teamlapen.vampirism.items;
 
 import de.teamlapen.lib.util.WeightedRandomItem;
 import de.teamlapen.vampirism.api.entity.factions.IFaction;
+import de.teamlapen.vampirism.api.entity.player.refinement.IRefinement;
 import de.teamlapen.vampirism.api.entity.player.refinement.IRefinementSet;
 import de.teamlapen.vampirism.api.entity.player.skills.ISkillPlayer;
 import de.teamlapen.vampirism.api.items.IRefinementItem;
 import de.teamlapen.vampirism.core.ModRegistries;
 import de.teamlapen.vampirism.entity.factions.FactionPlayerHandler;
 import de.teamlapen.vampirism.player.refinements.RefinementSet;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,6 +19,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.WeightedRandom;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
@@ -32,6 +36,26 @@ public class VampireRefinementItem extends Item implements IRefinementItem {
     public VampireRefinementItem(Properties properties, EquipmentSlotType type) {
         super(properties.maxStackSize(1));
         this.type = type;
+    }
+
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+        IRefinementSet refinementSet = this.getRefinementSet(stack);
+        if (refinementSet != null) {
+            for (IRefinement refinement : refinementSet.getRefinements()) {
+                tooltip.add(new TranslationTextComponent(refinement.getDescriptionKey()));
+            }
+        }
+    }
+
+    @Override
+    public Rarity getRarity(ItemStack stack) {
+        IRefinementSet refinementSet = this.getRefinementSet(stack);
+        if (refinementSet != null) {
+            return refinementSet.getRarity();
+        } else {
+            return Rarity.COMMON;
+        }
     }
 
     @Override
