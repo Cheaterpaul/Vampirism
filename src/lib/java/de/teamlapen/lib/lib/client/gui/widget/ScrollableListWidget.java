@@ -4,20 +4,16 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import de.teamlapen.lib.LIBREFERENCE;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
-import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -100,6 +96,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        if (!this.visible)return;
 
         RenderSystem.pushMatrix();
         RenderSystem.enableDepthTest();
@@ -170,6 +167,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        if (!this.visible) return false;
         if (this.canScroll) {
             this.scrolled = MathHelper.clamp(this.scrolled + 4 * ((int) -delta), 0, this.listItems.size() * this.itemHeight - this.height + 2);
             this.scrolledD = scrolled;
@@ -180,7 +178,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if(this.canScroll && this.scrollerClicked) {
+        if(this.visible && this.canScroll && this.scrollerClicked) {
             double perc = (dragY/(this.height-27));
             double s = (this.listItems.size() * this.itemHeight - this.height) * perc;
             this.scrolledD += s;
@@ -193,6 +191,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (!this.visible) return false;
         this.scrolledD = this.scrolled;
         if (mouseX > this.x && mouseX < this.x + this.width && mouseY > this.y && mouseY < this.y + this.height) {
             if (mouseX > this.x + this.width - this.scrollerWidth) {
@@ -283,7 +282,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
                 v = 86;
             }
             RenderSystem.enableDepthTest();
-            GuiUtils.drawContinuousTexturedBox(matrixStack, WIDGETS, x, y, 0, v, listWidth + 1, itemHeight, 200, 20, 3, 3, 3, 3, zLevel);
+            GuiUtils.drawContinuousTexturedBox(matrixStack, WIDGETS, x, y, 1, v, listWidth + 2, itemHeight, 200, 19, 3, 3, 3, 3, zLevel);
             RenderSystem.disableDepthTest();
         }
 
@@ -321,31 +320,6 @@ public class ScrollableListWidget<T> extends ExtendedButton {
          */
         public boolean onClick(double mouseX, double mouseY) {
             return false;
-        }
-    }
-
-    public static class TextComponentItem<T> extends ListItem<Pair<T,ITextComponent>> {
-
-        @Nonnull
-        private final Consumer<T> onClick;
-
-        public TextComponentItem(@Nonnull Pair<T,ITextComponent> item, @Nonnull ScrollableListWidget<Pair<T,ITextComponent>> list, @Nonnull Consumer<T> onClick) {
-            super(item, list);
-            this.onClick = onClick;
-        }
-
-        @Override
-        public void render(MatrixStack matrixStack, int x, int y, int listWidth, int listHeight, int itemHeight, int mouseX, int mouseY, float partialTicks, float zLevel) {
-            super.render(matrixStack, x, y, listWidth, listHeight, itemHeight, mouseX, mouseY, partialTicks, zLevel);
-            FontRenderer font = Minecraft.getInstance().fontRenderer;
-            int width = font.getStringPropertyWidth(this.item.getRight());
-            Minecraft.getInstance().fontRenderer.func_243246_a(matrixStack, this.item.getRight(), x + (listWidth/2) - (width/2), y + 5,-1);
-        }
-
-        @Override
-        public boolean onClick(double mouseX, double mouseY) {
-            onClick.accept(this.item.getLeft());
-            return true;
         }
     }
 }
