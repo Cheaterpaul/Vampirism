@@ -6,6 +6,7 @@ import de.teamlapen.lib.LIBREFERENCE;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 import net.minecraftforge.fml.client.gui.widget.ExtendedButton;
@@ -38,6 +39,15 @@ public class ScrollableListWidget<T> extends ExtendedButton {
 
     public ScrollableListWidget(int xPos, int yPos, int width, int height, int itemHeight, @Nonnull Supplier<Collection<T>> baseValueSupplier, @Nonnull ItemCreator<T> itemSupplier) {
         super(xPos, yPos, width, height, new StringTextComponent(""), (button) -> {
+        });
+        this.itemHeight = itemHeight;
+        this.itemSupplier = itemSupplier;
+        this.baseValueSupplier = baseValueSupplier;
+        this.refresh();
+    }
+
+    public ScrollableListWidget(int xPos, int yPos, int width, int height, int itemHeight, @Nonnull Supplier<Collection<T>> baseValueSupplier, @Nonnull ItemCreator<T> itemSupplier, ITextComponent name) {
+        super(xPos, yPos, width, height, name, (button) -> {
         });
         this.itemHeight = itemHeight;
         this.itemSupplier = itemSupplier;
@@ -282,7 +292,7 @@ public class ScrollableListWidget<T> extends ExtendedButton {
                 v = 86;
             }
             RenderSystem.enableDepthTest();
-            GuiUtils.drawContinuousTexturedBox(matrixStack, WIDGETS, x, y, 1, v, listWidth + 2, itemHeight, 200, 19, 3, 3, 3, 3, zLevel);
+            GuiUtils.drawContinuousTexturedBox(matrixStack, WIDGETS, x, y, 0, v, listWidth + 1, itemHeight, 200, 20, 3, 3, 3, 3, zLevel);
             RenderSystem.disableDepthTest();
         }
 

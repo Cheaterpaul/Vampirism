@@ -4,6 +4,7 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponent;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -20,9 +21,21 @@ public class ScrollableArrayTextComponentList extends ScrollableListWidget<Pair<
         super(xPos, yPos, width, height, itemHeight, () -> getItems(baseValueSupplier), (item, list) -> new TextComponentItem<>(item, list, buttonPressed));
     }
 
+    public ScrollableArrayTextComponentList(int xPos, int yPos, int width, int height, int itemHeight, int valueAmount, TextComponent baseName, @Nonnull Consumer<Integer> buttonPressed) {
+        super(xPos, yPos, width, height, itemHeight, () -> getItems(createTextArray(valueAmount, baseName)),(item, list) -> new TextComponentItem<>(item, list, buttonPressed), baseName);
+    }
+
     private static Collection<Pair<Integer, ITextComponent>> getItems(Supplier<ITextComponent[]> baseValueSupplier){
         List<ITextComponent> list = Arrays.asList(baseValueSupplier.get());
         return list.stream().map(item -> Pair.of(list.indexOf(item), item)).collect(Collectors.toList());
+    }
+
+    private static Supplier<ITextComponent[]> createTextArray(int amount, TextComponent baseName) {
+        ITextComponent[] array = new ITextComponent[amount];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = baseName.copyRaw().appendString(" "+(i+1));
+        }
+        return () -> array;
     }
 
     public static class TextComponentItem<T> extends ListItem<Pair<T,ITextComponent>> {

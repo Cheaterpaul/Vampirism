@@ -20,6 +20,7 @@ public class SelectMinionScreen extends Screen {
     private final Integer[] minionIds;
     private final ITextComponent[] minionNames;
     private final RequestMinionSelectPacket.Action action;
+    private ScrollableArrayTextComponentList list;
 
     public SelectMinionScreen(RequestMinionSelectPacket.Action a, List<Pair<Integer, ITextComponent>> minions) {
         super(new StringTextComponent(""));
@@ -40,7 +41,7 @@ public class SelectMinionScreen extends Screen {
 
         int w = 100;
         int maxH = 5;
-        this.addButton(new ScrollableArrayTextComponentList((this.width - w) / 2, (this.height - maxH * 20) / 2, w, Math.min(maxH * 20, 20 * minionNames.length), 20, () -> this.minionNames, SelectMinionScreen.this::onMinionSelected));
+        this.list = this.addButton(new ScrollableArrayTextComponentList((this.width - w) / 2, (this.height - maxH * 20) / 2, w, Math.min(maxH * 20, 20 * minionNames.length), 20, () -> this.minionNames, SelectMinionScreen.this::onMinionSelected));
     }
 
     private void onMinionSelected(int id) {
@@ -49,5 +50,13 @@ public class SelectMinionScreen extends Screen {
             VampirismMod.dispatcher.sendToServer(new SelectMinionTaskPacket(selectedMinion, SelectMinionTaskPacket.RECALL));
         }
         this.closeScreen();
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (!this.list.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
+        return true;
     }
 }
