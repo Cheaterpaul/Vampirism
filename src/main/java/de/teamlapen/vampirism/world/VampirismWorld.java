@@ -200,6 +200,21 @@ public class VampirismWorld implements IVampirismWorld {
 
     }
 
+    @Override
+    public boolean isBloodMoon() {
+        long daytime = world.getDayTime();
+        return daytime % 480000 >= 10000 && daytime % 480000 <= 24000; // every 20 days at night
+    }
+
+    public double bloodMoonProgress() {
+        long daytime = world.getDayTime();
+        long nightTime = (daytime - 10000) % 24000;
+        if (nightTime >= 0 && nightTime < 3000) return nightTime / 3000.0;
+        if (nightTime >= 3000 && nightTime < 12000) return 1;
+        if (nightTime >= 12000 && nightTime < 15000) return (15000 - nightTime) / 3000.0;
+        return 0;
+    }
+
     private record Emitter(EnumStrength strength, ChunkPos[] pos) {
 
         @Override

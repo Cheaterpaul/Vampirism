@@ -36,4 +36,6 @@ public interface IVampirismWorld extends IGarlicChunkHandler {
      * @param area      new bounding box of the fog protected area or null if the area should be removed
      */
     void updateTemporaryArtificialFog(@NotNull BlockPos sourcePos, @Nullable AABB area);
+
+    boolean isBloodMoon();
 }
