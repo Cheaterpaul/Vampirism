@@ -754,6 +754,7 @@ public class VampirePlayer extends FactionBasePlayer<IVampirePlayer> implements 
 
     @Override
     public void onLevelChanged(int newLevel, int oldLevel) {
+        super.onLevelChanged(newLevel, oldLevel);
         this.applyEntityAttributes();
         if (!isRemote()) {
             ScoreboardUtil.updateScoreboard(player, ScoreboardUtil.VAMPIRE_LEVEL_CRITERIA, newLevel);
@@ -772,12 +773,6 @@ public class VampirePlayer extends FactionBasePlayer<IVampirePlayer> implements 
             } else {
                 bloodStats.setMaxBlood(20);
             }
-            if (newLevel > 0) {
-            } else {
-                actionHandler.resetTimers();
-                skillHandler.disableAllSkills();
-                this.skillHandler.resetRefinements();
-            }
         } else {
             if (oldLevel == 0) {
                 if (player.hasEffect(MobEffects.NIGHT_VISION)) {
@@ -787,8 +782,6 @@ public class VampirePlayer extends FactionBasePlayer<IVampirePlayer> implements 
                 if (player.getEffect(MobEffects.NIGHT_VISION) instanceof VampireNightVisionEffectInstance) {
                     player.removeEffect(MobEffects.NIGHT_VISION);
                 }
-                actionHandler.resetTimers();
-                this.skillHandler.resetRefinements();
             }
         }
     }
