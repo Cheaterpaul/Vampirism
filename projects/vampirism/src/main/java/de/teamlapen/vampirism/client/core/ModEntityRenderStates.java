@@ -10,6 +10,7 @@ import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.util.Helper;
 import de.teamlapen.vampirism.common.world.blocks.CoffinBlock;
 import de.teamlapen.vampirism.common.world.entity.ExtendedCreature;
+import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
 import de.teamlapen.vampirism.common.world.entity.player.hunter.HunterPlayer;
 import de.teamlapen.vampirism.common.world.entity.player.vampire.VampirePlayer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.ambient.Bat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+import software.bernie.geckolib.constant.dataticket.DataTicket;
 
 import java.util.Optional;
 
@@ -51,6 +53,7 @@ public class ModEntityRenderStates {
     public static final ContextKey<Bat> VAMPIRE_BAT = create("vampire/bat");
     public static final ContextKey<Boolean> VAMPIRE_DBNO = create("vampire/dbno");
     public static final ContextKey<Boolean> VAMPIRE_SLEEPING_IN_COFFIN = create("vampire/sleeping_in_coffin");
+    public static final DataTicket<FightStage> DRACULA_STAGE = DataTicket.create(VIdentifier.modString("dracula/fight_stage"), FightStage.class);
 
     private static <T> ContextKey<T> create(String id) {
         return new ContextKey<>(VIdentifier.mod(id));

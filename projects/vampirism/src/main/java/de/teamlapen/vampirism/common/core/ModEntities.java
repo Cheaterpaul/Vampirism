@@ -13,6 +13,8 @@ import de.teamlapen.vampirism.common.world.entity.*;
 import de.teamlapen.vampirism.common.world.entity.converted.*;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.DefaultConverter;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.SpecialConverter;
+import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
+import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
 import de.teamlapen.vampirism.common.world.entity.hunter.*;
 import de.teamlapen.vampirism.common.world.entity.minion.HunterMinionEntity;
 import de.teamlapen.vampirism.common.world.entity.minion.VampireMinionEntity;
@@ -36,6 +38,7 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -100,6 +103,7 @@ public class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Boat>> CURSED_SPRUCE_BOAT = registerEntityType("cursed_spruce_boat", EntityType.boatFactory(ModItems.CURSED_SPRUCE_BOAT::get), MobCategory.MISC, x -> x.sized(1.375f,0.5625f).eyeHeight(0.5625f).clientTrackingRange(10).noLootTable().noSummon());
     public static final DeferredHolder<EntityType<?>, EntityType<ChestBoat>> DARK_SPRUCE_CHEST_BOAT = registerEntityType("dark_spruce_chest_boat", EntityType.chestBoatFactory(ModItems.DARK_SPRUCE_CHEST_BOAT::get), MobCategory.MISC, x -> x.sized(1.375f,0.5625f).eyeHeight(0.5625f).clientTrackingRange(10).noLootTable().noSummon());
     public static final DeferredHolder<EntityType<?>, EntityType<ChestBoat>> CURSED_SPRUCE_CHEST_BOAT = registerEntityType("cursed_spruce_chest_boat", EntityType.chestBoatFactory(ModItems.CURSED_SPRUCE_CHEST_BOAT::get), MobCategory.MISC, x -> x.sized(1.375f,0.5625f).eyeHeight(0.5625f).clientTrackingRange(10).noLootTable().noSummon());
+    public static final DeferredHolder<EntityType<?>, EntityType<Dracula>> DRACULA = registerEntityType("dracula", Dracula::new, VEnums.VAMPIRE_CATEGORY.getValue(), x -> x.sized(0.6f, 2.8f).clientTrackingRange(10));
 
 
     public static final DeferredHolder<MapCodec<? extends Converter>, MapCodec<? extends Converter>> DEFAULT_CONVERTER = CONVERTING_HELPER.register("default", () -> DefaultConverter.CODEC);
@@ -114,6 +118,7 @@ public class ModEntities {
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Item>> ITEM_DATA = DATA_SERIALIZER.register("item", () -> (EntityDataSerializer.ForValueType<Item>) (() -> ByteBufCodecs.registry(Registries.ITEM)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Holder<Item>>> ITEM_HOLDER = DATA_SERIALIZER.register("item_holder", () -> (EntityDataSerializer.ForValueType<Holder<Item>>) (() -> ByteBufCodecs.holderRegistry(Registries.ITEM)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Optional<UUID>>> OPTIONAL_UUID = DATA_SERIALIZER.register("optional_uuid", () -> (EntityDataSerializer.ForValueType<Optional<UUID>>) (() -> ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC)));
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<FightStage>> DRACULA_FIGHT_STAGE = DATA_SERIALIZER.register("dracula_fight_stage", () -> (EntityDataSerializer.ForValueType<FightStage>) (() -> NeoForgeStreamCodecs.enumCodec(FightStage.class)));
 
     static void register(IEventBus bus) {
         ENTITY_TYPES.register(bus);
@@ -181,6 +186,7 @@ public class ModEntities {
         event.put(GHOST.get(), GhostEntity.createAttributes().build());
         event.put(CONVERTED_CAMEL.get(), ConvertedCamelEntity.getAttributeBuilder().build());
         event.put(CONVERTED_CAT.get(), ConvertedCatEntity.createAttributes().build());
+        event.put(DRACULA.get(), Dracula.createAttributes().build());
     }
 
     static void onModifyEntityTypeAttributes(@NotNull EntityAttributeModificationEvent event) {

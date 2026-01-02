@@ -97,6 +97,7 @@ public class ModEntitiesRender {
         event.registerEntityRenderer(ModEntities.DARK_SPRUCE_CHEST_BOAT.get(), context -> new BoatRenderer(context, DARK_SPRUCE_CHEST_BOAT));
         event.registerEntityRenderer(ModEntities.CURSED_SPRUCE_BOAT.get(), context -> new BoatRenderer(context, CURSED_SPRUCE_BOAT));
         event.registerEntityRenderer(ModEntities.CURSED_SPRUCE_CHEST_BOAT.get(), context -> new BoatRenderer(context, CURSED_SPRUCE_CHEST_BOAT));
+        event.registerEntityRenderer(ModEntities.DRACULA.get(), DraculaRenderer::new);
     }
 
     public static void onRegisterLayers(EntityRenderersEvent.@NotNull RegisterLayerDefinitions event) {
