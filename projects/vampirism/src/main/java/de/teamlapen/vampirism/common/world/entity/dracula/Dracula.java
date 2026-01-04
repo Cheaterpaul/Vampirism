@@ -1,12 +1,14 @@
 package de.teamlapen.vampirism.common.world.entity.dracula;
 
 import com.mojang.serialization.Dynamic;
+import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -59,6 +61,20 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     public boolean isInvulnerableTo(ServerLevel level, DamageSource damageSource) {
         return super.isInvulnerableTo(level, damageSource) || (!damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && this.isTransforming());
+    }
+
+    protected void updateEvent() {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            DraculaFightData data = serverLevel.getData(ModAttachments.DRACULA_FIGHT_DATA.get());
+            data.getEvent().update(this);
+        }
+    }
+
+    protected void addPlayerToEvent(ServerPlayer player) {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            DraculaFightData data = serverLevel.getData(ModAttachments.DRACULA_FIGHT_DATA.get());
+            data.getEvent().addPlayer(player);
+        }
     }
 
     //<editor-fold desc="Data">
@@ -267,6 +283,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         if (percentage >= 1) {
             finishTransformation();
         }
+        updateEvent();
     }
 
     private void finishTransformation() {
@@ -292,6 +309,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         if (level() instanceof ServerLevel serverLevel) {
             DraculaAi.stop(this, serverLevel);
         }
+        updateEvent();
     }
 
     @Override
@@ -310,8 +328,20 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     protected void actuallyHurt(ServerLevel level, DamageSource damageSource, float amount) {
         super.actuallyHurt(level, damageSource, amount);
+        if (damageSource.getEntity() instanceof ServerPlayer player) {
+            addPlayerToEvent(player);
+        }
         if (getState() == DraculaState.DEFAULT) {
             setState(DraculaState.PASSIVE);
+        }
+        updateEvent();
+    }
+
+    @Override
+    public void die(DamageSource damageSource) {
+        super.die(damageSource);
+        if (this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getData(ModAttachments.DRACULA_FIGHT_DATA.get()).getEvent().clear();
         }
     }
 
