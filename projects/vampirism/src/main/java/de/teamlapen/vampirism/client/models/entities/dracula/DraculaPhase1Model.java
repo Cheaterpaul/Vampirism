@@ -36,7 +36,7 @@ public class DraculaPhase1Model extends GeoModel<Dracula> {
 
     @Override
     public Identifier getAnimationResource(Dracula animatable) {
-        return switch (animatable.getFightStage()) {
+        return switch (animatable.getStage()) {
             case PHASE_2 -> PHASE2;
             case PHASE_3 -> PHASE3;
             default -> PHASE1;

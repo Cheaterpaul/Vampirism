@@ -1,16 +1,24 @@
 package de.teamlapen.vampirism.common.world.entity.dracula;
 
+import com.mojang.serialization.Dynamic;
 import de.teamlapen.vampirism.common.core.ModEntities;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
@@ -18,9 +26,11 @@ import software.bernie.geckolib.animation.AnimationController;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class Dracula extends Mob implements GeoAnimatable, IDraculaAnimations {
+public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAnimations {
 
-    public static final EntityDataAccessor<FightStage> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_FIGHT_STAGE.get());
+    public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
+
+    private long transformationStart;
 
     public Dracula(EntityType<? extends Dracula> type, Level level) {
         super(type, level);
@@ -31,19 +41,43 @@ public class Dracula extends Mob implements GeoAnimatable, IDraculaAnimations {
         return HumanoidArm.RIGHT;
     }
 
+    public FightStage getStage() {
+        return getState().stage;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        tickTransformation();
+    }
+
+    @Override
+    public boolean isInvulnerable() {
+        return super.isInvulnerable() || this.isTransforming();
+    }
+
+    @Override
+    public boolean isInvulnerableTo(ServerLevel level, DamageSource damageSource) {
+        return super.isInvulnerableTo(level, damageSource) || (!damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && this.isTransforming());
+    }
+
     //<editor-fold desc="Data">
 
-    public FightStage getFightStage() {
+    private boolean isTransforming() {
+        return this.getState().isTransforming;
+    }
+
+    public DraculaState getState() {
         return this.entityData.get(FIGHT_STAGE);
     }
-    private void setFightStage(FightStage stage) {
+    private void setState(DraculaState stage) {
         this.entityData.set(FIGHT_STAGE, stage);
     }
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(FIGHT_STAGE, FightStage.NONE);
+        builder.define(FIGHT_STAGE, DraculaState.DEFAULT);
     }
 
     //</editor-fold>
@@ -67,6 +101,7 @@ public class Dracula extends Mob implements GeoAnimatable, IDraculaAnimations {
     }
 
     private static double createKnockbackResistance(FightStage stage) {
+        //noinspection SwitchStatementWithTooFewBranches
         return switch (stage) {
             default-> 1d;
         };
@@ -113,6 +148,18 @@ public class Dracula extends Mob implements GeoAnimatable, IDraculaAnimations {
         };
     }
 
+    @SuppressWarnings("DataFlowIssue")
+    private void updateAttributes(FightStage fightStage) {
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(createMaxHealth(fightStage));
+        this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(createAttackDamage(fightStage));
+        this.getAttribute(Attributes.ATTACK_KNOCKBACK).setBaseValue(createAttackKnockback(fightStage));
+        this.getAttribute(Attributes.KNOCKBACK_RESISTANCE).setBaseValue(createKnockbackResistance(fightStage));
+        this.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(createMovementSpeed(fightStage));
+        this.getAttribute(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).setBaseValue(createExplosionKnockbackResistance(fightStage));
+        this.getAttribute(Attributes.ARMOR).setBaseValue(createArmor(fightStage));
+        this.getAttribute(Attributes.ARMOR_TOUGHNESS).setBaseValue(createArmorToughness(fightStage));
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return createMobAttributes()
                 .add(Attributes.MAX_HEALTH, createMaxHealth(FightStage.NONE))
@@ -154,13 +201,118 @@ public class Dracula extends Mob implements GeoAnimatable, IDraculaAnimations {
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        setFightStage(input.read("fight_stage", FightStage.CODEC).orElse(FightStage.NONE));
+        setState(input.read("fight_stage", DraculaState.CODEC).orElse(DraculaState.DEFAULT));
+        this.transformationStart = input.getLongOr("transformation_start", -1);
     }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.store("fight_stage", FightStage.CODEC, getFightStage());
+        output.store("fight_stage", DraculaState.CODEC, getState());
+        if (this.transformationStart != -1) {
+            output.putLong("transformation_start", this.transformationStart);
+        }
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Brain">
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Brain<Dracula> getBrain() {
+        return (Brain<Dracula>) super.getBrain();
+    }
+
+    @Override
+    protected Brain<?> makeBrain(Dynamic<?> dynamic) {
+        return DraculaAi.makeBrain(this, this.brainProvider().makeBrain(dynamic));
+    }
+
+    @Override
+    protected Brain.Provider<Dracula> brainProvider() {
+        return Brain.provider(DraculaAi.MEMORY_TYPES, DraculaAi.SENSOR_TYPES);
+    }
+
+    @Override
+    protected void customServerAiStep(ServerLevel level) {
+        if (this.isTransforming()) {
+            this.getBrain().tick(level, this);
+            DraculaAi.updateMemories(this);
+            DraculaAi.updateActivity(this, level);
+        }
+    }
+
+    @Override
+    public void aiStep() {
+        this.updateSwingTime();
+        if (this.isTransforming()) {
+            super.aiStep();
+        }
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Transformation">
+
+    protected void tickTransformation() {
+        if (!this.isTransforming() || !(this.level() instanceof ServerLevel serverLevel)) return;
+
+
+        var percentage = ((serverLevel.getGameTime() - this.transformationStart) / (float) getState().transformTime);
+
+
+        setHealth(Math.max(1, getMaxHealth() * percentage));
+
+        if (percentage >= 1) {
+            finishTransformation();
+        }
+    }
+
+    private void finishTransformation() {
+        var stage = switch (this.getStage()) {
+            case PHASE_2 -> DraculaState.RANGED;
+            case PHASE_3 -> DraculaState.RAGED;
+            default -> throw new IllegalStateException("Unexpected value: " + this.getStage());
+        };
+        this.setState(stage);
+        this.transformationStart = -1;
+    }
+
+    private void startTransformation() {
+        var nextStage = switch (this.getStage()) {
+            case PHASE_1 -> DraculaState.TRANSFORMING_TO_RANGED;
+            case PHASE_2 -> DraculaState.TRANSFORMING_TO_RAGED;
+            default -> throw new IllegalStateException("Unexpected value: " + this.getStage());
+        };
+
+        this.transformationStart = this.level().getGameTime();
+        this.setState(nextStage);
+        updateAttributes(getStage());
+        if (level() instanceof ServerLevel serverLevel) {
+            DraculaAi.stop(this, serverLevel);
+        }
+    }
+
+    @Override
+    public void setHealth(float health) {
+        if (this.getState() != DraculaState.RAGED && this.damageContainers != null && !this.damageContainers.empty()) {
+            DamageContainer peek = this.damageContainers.peek();
+            if (!peek.getSource().is(DamageTypeTags.BYPASSES_INVULNERABILITY) && health <= 0) {
+                health = 1;
+                startTransformation();
+            }
+        }
+
+        super.setHealth(health);
+    }
+
+    @Override
+    protected void actuallyHurt(ServerLevel level, DamageSource damageSource, float amount) {
+        super.actuallyHurt(level, damageSource, amount);
+        if (getState() == DraculaState.DEFAULT) {
+            setState(DraculaState.PASSIVE);
+        }
     }
 
     //</editor-fold>

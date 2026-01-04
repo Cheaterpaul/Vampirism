@@ -18,7 +18,7 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
 
     @Override
     public void addRenderData(Dracula animatable, @Nullable Void relatedObject, RenderState renderState, float partialTick) {
-        FightStage fightStage = animatable.getFightStage();
+        FightStage fightStage = animatable.getStage();
 
         renderState.addGeckolibData(ModEntityRenderStates.DRACULA_STAGE, fightStage);
 

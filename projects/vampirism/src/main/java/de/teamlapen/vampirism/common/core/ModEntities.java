@@ -14,7 +14,7 @@ import de.teamlapen.vampirism.common.world.entity.converted.*;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.DefaultConverter;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.SpecialConverter;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import de.teamlapen.vampirism.common.world.entity.hunter.*;
 import de.teamlapen.vampirism.common.world.entity.minion.HunterMinionEntity;
 import de.teamlapen.vampirism.common.world.entity.minion.VampireMinionEntity;
@@ -38,7 +38,6 @@ import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
-import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -118,7 +117,7 @@ public class ModEntities {
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Item>> ITEM_DATA = DATA_SERIALIZER.register("item", () -> (EntityDataSerializer.ForValueType<Item>) (() -> ByteBufCodecs.registry(Registries.ITEM)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Holder<Item>>> ITEM_HOLDER = DATA_SERIALIZER.register("item_holder", () -> (EntityDataSerializer.ForValueType<Holder<Item>>) (() -> ByteBufCodecs.holderRegistry(Registries.ITEM)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Optional<UUID>>> OPTIONAL_UUID = DATA_SERIALIZER.register("optional_uuid", () -> (EntityDataSerializer.ForValueType<Optional<UUID>>) (() -> ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC)));
-    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<FightStage>> DRACULA_FIGHT_STAGE = DATA_SERIALIZER.register("dracula_fight_stage", () -> (EntityDataSerializer.ForValueType<FightStage>) (() -> NeoForgeStreamCodecs.enumCodec(FightStage.class)));
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<DraculaState>> DRACULA_STATE = DATA_SERIALIZER.register("dracula_state", () -> (EntityDataSerializer.ForValueType<DraculaState>) (() -> DraculaState.STREAM_CODEC));
 
     static void register(IEventBus bus) {
         ENTITY_TYPES.register(bus);
