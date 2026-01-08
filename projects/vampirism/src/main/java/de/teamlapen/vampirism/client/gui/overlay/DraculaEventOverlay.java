@@ -16,6 +16,7 @@ public class DraculaEventOverlay extends BaseOverlay {
 
     private static final Identifier BACKGROUND = VIdentifier.mod("textures/gui/overlay/dracula_event.png");
     private static final Identifier TEXTURE_STAGE = VIdentifier.mod("textures/gui/overlay/dracula_event_overlay_1.png");
+    private static final Identifier TEXTURE_LOCKED = VIdentifier.mod("textures/gui/overlay/dracula_event_overlay_locked.png");
 
     @Nullable
     private DraculaEvent event;
@@ -32,6 +33,10 @@ public class DraculaEventOverlay extends BaseOverlay {
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, xPos,yPos,0,0, 360,34,360,34);
 
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE_STAGE, xPos + 45,yPos + 12,45,12, (int) (294 * this.event.getPercentage()),10,360,34);
+
+            if (this.event.isInVulnerable()) {
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE_LOCKED, xPos + 45,yPos + 12,45,12, 294,10,360,34);
+            }
             pose.popMatrix();
         }
     }

@@ -267,7 +267,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     public void aiStep() {
         this.updateSwingTime();
-        if (this.isTransforming()) {
+        if (!this.isTransforming()) {
             super.aiStep();
         }
     }
