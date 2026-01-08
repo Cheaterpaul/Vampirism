@@ -112,7 +112,7 @@ public record ClientboundDraculaEventPacket(Operation operation) implements Cust
 
         @Override
         public ClientboundDraculaEventPacket.OperationType getType() {
-            return ClientboundDraculaEventPacket.OperationType.UPDATE_PROGRESS;
+            return OperationType.UPDATE_INVULNERABLE;
         }
     }
 

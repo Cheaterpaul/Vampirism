@@ -24,6 +24,11 @@ public class ServerDraculaEvent extends DraculaEvent {
         setStage(dracula.getStage());
         setInVulnerable(dracula.isInvulnerable());
         setPercentage(dracula.getHealth() / dracula.getMaxHealth());
+        if (this.isVisible) {
+            sendUpdate(ClientboundDraculaEventPacket.OperationType.UPDATE);
+        } else {
+            setVisible(true);
+        }
     }
 
     public void clear() {
@@ -31,9 +36,11 @@ public class ServerDraculaEvent extends DraculaEvent {
         for (ServerPlayer player : this.players) {
             player.connection.send(packet);
         }
+        this.players.clear();
     }
 
     public void addPlayer(ServerPlayer player) {
+
         if (this.players.add(player) && this.isVisible) {
             player.connection.send(new ClientboundDraculaEventPacket(new ClientboundDraculaEventPacket.AddOperation(this)));
         }

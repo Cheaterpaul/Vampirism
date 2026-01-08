@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula;
 
 import com.mojang.serialization.Dynamic;
+import de.teamlapen.vampirism.client.core.ModEntityRenderStates;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
@@ -25,6 +26,7 @@ import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
@@ -198,6 +200,9 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("Walk/Run/Idle", test -> {
+            if (test.getDataOrDefault(ModEntityRenderStates.DRACULA_TRANSFORMING, false)) {
+                return PlayState.STOP;
+            }
             if (test.isMoving()) {
                 return test.setAndContinue(isSprinting() ? DefaultAnimations.RUN : DefaultAnimations.WALK);
             }
@@ -252,7 +257,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     @Override
     protected void customServerAiStep(ServerLevel level) {
-        if (this.isTransforming()) {
+        if (!this.isTransforming()) {
             this.getBrain().tick(level, this);
             DraculaAi.updateMemories(this);
             DraculaAi.updateActivity(this, level);
