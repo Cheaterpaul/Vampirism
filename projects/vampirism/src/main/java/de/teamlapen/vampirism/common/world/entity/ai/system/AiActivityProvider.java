@@ -20,24 +20,28 @@ import java.util.stream.Stream;
 public abstract class AiActivityProvider<E extends LivingEntity> {
 
     protected final List<ActivityBuilder<E>> builders = new ArrayList<>();
-    protected final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
-    protected final Set<MemoryModuleType<?>> memories = new HashSet<>();
-    protected final List<AiAction<E>> actions = new ArrayList<>();
+    protected final List<ActivityBuilder<E>> actionBuilders = new ArrayList<>();
 
-    public List<AiAction<E>> getActions() {
-        return actions;
+    public List<ActivityBuilder<E>> getActionBuilders() {
+        return actionBuilders;
     }
 
-    protected void addAction(AiAction<E> action) {
-        this.actions.add(action);
+    public List<ActivityBuilder<E>> getBuilders() {
+        return builders;
     }
 
     /**
      * Returns the sensors required specifically for this activity set.
      */
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-        Set<SensorType<? extends Sensor<? super E>>> allSensors = new HashSet<>(sensors);
+        Set<SensorType<? extends Sensor<? super E>>> allSensors = new HashSet<>();
         for (ActivityBuilder<E> builder : builders) {
+            allSensors.addAll(builder.getSensors());
+            for (ActivityBuilder<E> actionBuilder : builder.getActionBuilders()) {
+                allSensors.addAll(actionBuilder.getSensors());
+            }
+        }
+        for (ActivityBuilder<E> builder : actionBuilders) {
             allSensors.addAll(builder.getSensors());
         }
         return allSensors;
@@ -47,8 +51,16 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
      * Returns the memory modules required specifically for this activity set.
      */
     public Set<MemoryModuleType<?>> getMemoryModules() {
-        Set<MemoryModuleType<?>> allMemories = new HashSet<>(memories);
+        Set<MemoryModuleType<?>> allMemories = new HashSet<>();
         for (ActivityBuilder<E> builder : builders) {
+            allMemories.addAll(builder.getMemories());
+            allMemories.addAll(builder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
+            for (ActivityBuilder<E> actionBuilder : builder.getActionBuilders()) {
+                allMemories.addAll(actionBuilder.getMemories());
+                allMemories.addAll(actionBuilder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
+            }
+        }
+        for (ActivityBuilder<E> builder : actionBuilders) {
             allMemories.addAll(builder.getMemories());
             allMemories.addAll(builder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
         }
@@ -59,14 +71,18 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
      * Registers the activities and behaviors into the entity's brain.
      */
     public void initActivity(Brain<E> brain) {
-        builders.forEach(builder -> builder.register(brain));
+        builders.forEach(builder -> {
+            builder.register(brain);
+            builder.getActionBuilders().forEach(actionBuilder -> actionBuilder.register(brain));
+        });
+        actionBuilders.forEach(builder -> builder.register(brain));
     }
 
     /**
      * Optional: Returns activities that should be checked for activation.
      */
     public Stream<Activity> getActiveActivities() {
-        return builders.stream().map(ActivityBuilder::getActivity);
+        return Stream.concat(builders.stream().flatMap(b -> Stream.concat(Stream.of(b), b.getActionBuilders().stream())), actionBuilders.stream()).map(ActivityBuilder::getActivity);
     }
 
     protected ActivityBuilder<E> createActivity(Activity activity) {
@@ -79,11 +95,13 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
         return createActivity(activitySupplier.get());
     }
 
-    protected void addSensor(SensorType<? extends Sensor<? super E>> sensor) {
-        this.sensors.add(sensor);
+    protected ActivityBuilder<E> createAction(Activity activity) {
+        ActivityBuilder<E> builder = ActivityBuilder.create(activity);
+        this.actionBuilders.add(builder);
+        return builder;
     }
 
-    protected void addMemory(MemoryModuleType<?> memory) {
-        this.memories.add(memory);
+    protected ActivityBuilder<E> createAction(Supplier<Activity> activitySupplier) {
+        return createAction(activitySupplier.get());
     }
 }

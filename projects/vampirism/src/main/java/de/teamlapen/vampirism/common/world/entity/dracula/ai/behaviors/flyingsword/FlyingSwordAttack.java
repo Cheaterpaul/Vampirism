@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -12,21 +13,15 @@ import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Set;
 
-public class FlyingSwordAttack extends Behavior<Dracula> {
-
-    public static Stream<MemoryModuleType<?>> requires() {
-        return Stream.of(
-                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get()
-        );
-    }
+public class FlyingSwordAttack extends Behavior<Dracula> implements IInformativeBehavior {
 
     private enum Phase {
         CHANNELING,
@@ -46,6 +41,21 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(), MemoryStatus.VALUE_PRESENT,
                 MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
         ), 400);
+    }
+
+    @Override
+    public Set<SensorType<? extends Sensor<?>>> getSensors() {
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+    }
+
+    @Override
+    public Set<MemoryModuleType<?>> getMemories() {
+        return Set.of(
+                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(),
+                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(),
+                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(),
+                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
+        );
     }
 
     @Override

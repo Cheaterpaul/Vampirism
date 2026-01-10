@@ -56,6 +56,15 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
 
     private void updateActivity(ServerLevel level) {
         Brain<Dracula> brain = this.entity.getBrain();
+        if (!brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()) && !brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get())) {
+            this.activityProviders.stream().flatMap(p -> Stream.concat(p.getActionBuilders().stream(), p.getBuilders().stream().flatMap(b -> b.getActionBuilders().stream())))
+                    .filter(builder -> builder.getRequirements().stream().allMatch(pair -> brain.checkMemory(pair.getFirst(), pair.getSecond())))
+                    .filter(builder -> builder.getCanActivate() != null && builder.getCanActivate().test(level, entity)).findFirst().ifPresent(builder -> {
+                brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
+                builder.getActionMemories().forEach(memory -> brain.setMemory((MemoryModuleType<net.minecraft.util.Unit>) memory, net.minecraft.util.Unit.INSTANCE));
+                brain.setActiveActivityIfPossible(builder.getActivity());
+            });
+        }
         brain.setActiveActivityToFirstValid(
                 this.activityProviders.stream().flatMap(AiActivityProvider::getActiveActivities).toList()
         );

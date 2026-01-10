@@ -13,12 +13,11 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class SummonVampireBats {
 
-    public static Stream<MemoryModuleType<?>> requires() {
-        return Stream.of(
+    public static Set<MemoryModuleType<?>> requires() {
+        return Set.of(
                 ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get(),
                 ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get()
         );

@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingneedle;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -11,20 +12,15 @@ import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Set;
 
-public class FlyingNeedleAttack extends Behavior<Dracula> {
-
-    public static Stream<MemoryModuleType<?>> requires() {
-        return Stream.of(
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get()
-        );
-    }
+public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativeBehavior {
 
     private enum Phase {
         CHARGING,
@@ -42,6 +38,20 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
                 MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
         ), 400);
+    }
+
+    @Override
+    public Set<SensorType<? extends Sensor<?>>> getSensors() {
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+    }
+
+    @Override
+    public Set<MemoryModuleType<?>> getMemories() {
+        return Set.of(
+                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(),
+                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(),
+                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
+        );
     }
 
     @Override

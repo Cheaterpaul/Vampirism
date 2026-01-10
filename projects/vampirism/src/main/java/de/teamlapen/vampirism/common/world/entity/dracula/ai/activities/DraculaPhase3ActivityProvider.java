@@ -5,7 +5,6 @@ import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.RegenerationBehavior;
-import de.teamlapen.vampirism.common.world.entity.dracula.ai.sensor.rage.RegenerationAction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.*;
@@ -18,9 +17,7 @@ import java.util.Optional;
 public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaPhase3ActivityProvider() {
-        addAction(new RegenerationAction());
-
-        createActivity(ModActivities.DRACULA_PHASE_3)
+        var activity = createActivity(ModActivities.DRACULA_PHASE_3)
                 .add(StopAttackingIfTargetInvalid.create())
                 .add(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F))
                 .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget))
@@ -29,13 +26,18 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
                 .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.4f))
                 .requires(ModMemoryTypes.Dracula.PHASE_3, MemoryStatus.VALUE_PRESENT);
 
-        createActivity(ModActivities.DRACULA_REGENERATION)
-                .requires(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), MemoryStatus.VALUE_PRESENT)
-                .requires(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT)
-                .requires(ModMemoryTypes.Dracula.PHASE_3, MemoryStatus.VALUE_PRESENT)
-                .requires(ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get(), MemoryStatus.VALUE_PRESENT)
-                .requires(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT)
-                .add(new RegenerationBehavior());
+        activity.addAction(ModActivities.DRACULA_REGENERATION)
+                .actionMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
+                .cooldownMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN)
+                .add(new RegenerationBehavior())
+                .canActivate((level, dracula) -> {
+                    float v = (dracula.getHealth() / dracula.getMaxHealth());
+                    float gate = 1 - RegenerationBehavior.HEALTH_PERCENTAGE;
+                    if (v >= gate) {
+                        return false;
+                    }
+                    return dracula.getRandom().nextFloat() < ((1 - v) / gate);
+                });
     }
 
     private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel level, Dracula dracula) {

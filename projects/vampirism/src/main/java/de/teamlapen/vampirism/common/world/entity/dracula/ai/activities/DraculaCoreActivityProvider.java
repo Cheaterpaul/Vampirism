@@ -16,9 +16,7 @@ public class DraculaCoreActivityProvider extends AiActivityProvider<Dracula> {
     public DraculaCoreActivityProvider() {
         createActivity(Activity.CORE)
                 .add(new Swim<>(0.8f))
-                .add(new LookAtTargetSink(45, 90), Set.of(), Set.of(
-                        MemoryModuleType.LOOK_TARGET
-                ))
+                .add(new LookAtTargetSink(45, 90), Set.of(), Set.of(MemoryModuleType.LOOK_TARGET))
                 .add(new MoveToTargetSink(), Set.of(
                                 SensorType.NEAREST_LIVING_ENTITIES,
                                 SensorType.HURT_BY
