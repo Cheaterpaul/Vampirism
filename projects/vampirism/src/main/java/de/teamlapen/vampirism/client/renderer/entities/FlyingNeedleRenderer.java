@@ -16,7 +16,7 @@ import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 
 public class FlyingNeedleRenderer extends EntityRenderer<FlyingNeedleEntity, FlyingNeedleRenderer.FlyingNeedleRenderState> {
-    private static final Identifier TEXTURE = VIdentifier.mod("textures/entity/dracula/flying_needles.png");
+    private static final Identifier TEXTURE = VIdentifier.mod("textures/entity/dracula/flying_needle.png");
 
     public FlyingNeedleRenderer(EntityRendererProvider.Context context) {
         super(context);
