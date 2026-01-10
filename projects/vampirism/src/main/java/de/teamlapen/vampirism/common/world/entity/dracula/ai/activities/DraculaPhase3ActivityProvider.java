@@ -26,7 +26,8 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
                 .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.4f))
                 .requires(ModMemoryTypes.Dracula.PHASE_3, MemoryStatus.VALUE_PRESENT);
 
-        activity.addAction(ModActivities.DRACULA_REGENERATION)
+        activity.useActions()
+                .addAction(ModActivities.DRACULA_REGENERATION)
                 .actionMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN)
                 .add(new RegenerationBehavior())

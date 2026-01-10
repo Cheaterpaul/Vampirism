@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.ai.system;
 
 import com.mojang.datafixers.util.Pair;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -20,9 +21,9 @@ import java.util.stream.Stream;
 public abstract class AiActivityProvider<E extends LivingEntity> {
 
     protected final List<ActivityBuilder<E>> builders = new ArrayList<>();
-    protected final List<ActivityBuilder<E>> actionBuilders = new ArrayList<>();
+    protected final List<ActionBuilder<E>> actionBuilders = new ArrayList<>();
 
-    public List<ActivityBuilder<E>> getActionBuilders() {
+    public List<ActionBuilder<E>> getActionBuilders() {
         return actionBuilders;
     }
 
@@ -37,11 +38,11 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
         Set<SensorType<? extends Sensor<? super E>>> allSensors = new HashSet<>();
         for (ActivityBuilder<E> builder : builders) {
             allSensors.addAll(builder.getSensors());
-            for (ActivityBuilder<E> actionBuilder : builder.getActionBuilders()) {
+            for (ActionBuilder<E> actionBuilder : builder.getActionBuilders()) {
                 allSensors.addAll(actionBuilder.getSensors());
             }
         }
-        for (ActivityBuilder<E> builder : actionBuilders) {
+        for (ActionBuilder<E> builder : actionBuilders) {
             allSensors.addAll(builder.getSensors());
         }
         return allSensors;
@@ -54,13 +55,12 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
         Set<MemoryModuleType<?>> allMemories = new HashSet<>();
         for (ActivityBuilder<E> builder : builders) {
             allMemories.addAll(builder.getMemories());
-            allMemories.addAll(builder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
-            for (ActivityBuilder<E> actionBuilder : builder.getActionBuilders()) {
+            for (ActionBuilder<E> actionBuilder : builder.getActionBuilders()) {
                 allMemories.addAll(actionBuilder.getMemories());
                 allMemories.addAll(actionBuilder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
             }
         }
-        for (ActivityBuilder<E> builder : actionBuilders) {
+        for (ActionBuilder<E> builder : actionBuilders) {
             allMemories.addAll(builder.getMemories());
             allMemories.addAll(builder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
         }
@@ -82,7 +82,7 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
      * Optional: Returns activities that should be checked for activation.
      */
     public Stream<Activity> getActiveActivities() {
-        return Stream.concat(builders.stream().flatMap(b -> Stream.concat(Stream.of(b), b.getActionBuilders().stream())), actionBuilders.stream()).map(ActivityBuilder::getActivity);
+        return Stream.concat(builders.stream().map(ActivityBuilder::getActivity), actionBuilders.stream().map(ActionBuilder::getActivity)).filter(Objects::nonNull);
     }
 
     protected ActivityBuilder<E> createActivity(Activity activity) {
@@ -95,13 +95,13 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
         return createActivity(activitySupplier.get());
     }
 
-    protected ActivityBuilder<E> createAction(Activity activity) {
-        ActivityBuilder<E> builder = ActivityBuilder.create(activity);
+    protected ActionBuilder<E> createAction(Activity activity) {
+        ActionBuilder<E> builder = new ActionBuilder<>(null, activity);
         this.actionBuilders.add(builder);
         return builder;
     }
 
-    protected ActivityBuilder<E> createAction(Supplier<Activity> activitySupplier) {
+    protected ActionBuilder<E> createAction(Supplier<Activity> activitySupplier) {
         return createAction(activitySupplier.get());
     }
 }

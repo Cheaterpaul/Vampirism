@@ -62,7 +62,9 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
                     .filter(builder -> builder.getCanActivate() != null && builder.getCanActivate().test(level, entity)).findFirst().ifPresent(builder -> {
                 brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
                 builder.getActionMemories().forEach(memory -> brain.setMemory((MemoryModuleType<net.minecraft.util.Unit>) memory, net.minecraft.util.Unit.INSTANCE));
-                brain.setActiveActivityIfPossible(builder.getActivity());
+                if (builder.getActivity() != null) {
+                    brain.setActiveActivityIfPossible(builder.getActivity());
+                }
             });
         }
         brain.setActiveActivityToFirstValid(

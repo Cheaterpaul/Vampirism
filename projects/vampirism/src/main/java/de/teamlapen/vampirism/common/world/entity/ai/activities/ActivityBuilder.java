@@ -2,7 +2,6 @@ package de.teamlapen.vampirism.common.world.entity.ai.activities;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder {
@@ -27,13 +25,15 @@ public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder
     private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     private int startPriority = 10;
-    private BiPredicate<ServerLevel, E> canActivate;
-    private final Set<MemoryModuleType<?>> actionMemories = new HashSet<>();
-    private final List<ActivityBuilder<E>> actionBuilders = new ArrayList<>();
-    private final Set<Pair<MemoryModuleType<?>, MemoryStatus>> actionRequirements = new HashSet<>();
+    private final List<ActionBuilder<E>> actionBuilders = new ArrayList<>();
+    private BehaviorControl<? super E> actionHandler;
 
-    public List<ActivityBuilder<E>> getActionBuilders() {
+    public List<ActionBuilder<E>> getActionBuilders() {
         return actionBuilders;
+    }
+
+    public BehaviorControl<? super E> getActionHandler() {
+        return actionHandler;
     }
 
     public ActivityBuilder(Activity activity) {
@@ -55,7 +55,7 @@ public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder
 
     public ActivityBuilder<E> requires(MemoryModuleType<?> memory, MemoryStatus status) {
         this.requirements.add(Pair.of(memory, status));
-        this.actionRequirements.add(Pair.of(memory, status));
+        this.memories.add(memory);
         return this;
     }
 
@@ -68,19 +68,13 @@ public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder
         return this;
     }
 
-    public ActivityBuilder<E> addRequirements(Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements) {
-        this.requirements.addAll(requirements);
-        return this;
+    public ActionBuilder<E> useActions() {
+        this.actionHandler = new ActionHandler<>(this.actionBuilders);
+        return new ActionBuilder<>(this, null);
     }
 
-    public ActivityBuilder<E> add(BehaviorControl<? super E> control) {
-        this.behaviors.add(control);
-        if (control instanceof IInformativeBehavior informative) {
-            //noinspection unchecked
-            this.sensors.addAll((Set<? extends SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors());
-            this.memories.addAll(informative.getMemories());
-        }
-        return this;
+    public <T extends BehaviorControl<? super E> & IInformativeBehavior<E>> ActivityBuilder<E> add(T control) {
+        return this.add(control, control.getSensors(), control.getMemories());
     }
 
     public ActivityBuilder<E> add(BehaviorControl<? super E> control, Set<SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
@@ -95,54 +89,8 @@ public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder
         return this;
     }
 
-    public ActivityBuilder<E> canActivate(BiPredicate<ServerLevel, E> canActivate) {
-        this.canActivate = canActivate;
-        return this;
-    }
-
-    public ActivityBuilder<E> addAction(Activity activity) {
-        ActivityBuilder<E> builder = create(activity);
-        builder.addRequirements(this.actionRequirements);
-        this.actionBuilders.add(builder);
-        return builder;
-    }
-
-    public ActivityBuilder<E> addAction(Supplier<Activity> activity) {
-        return addAction(activity.get());
-    }
-
-    public BiPredicate<ServerLevel, E> getCanActivate() {
-        return canActivate;
-    }
-
-    public ActivityBuilder<E> actionMemory(MemoryModuleType<?> actionMemory) {
-        this.actionMemories.add(actionMemory);
-        return this;
-    }
-
-    public <T> ActivityBuilder<E> actionMemory(Supplier<MemoryModuleType<T>> actionMemory) {
-        return actionMemory(actionMemory.get());
-    }
-
-    public ActivityBuilder<E> cooldownMemory(MemoryModuleType<?> cooldownMemory) {
-        this.requirements.add(Pair.of(cooldownMemory, MemoryStatus.VALUE_ABSENT));
-        return this;
-    }
-
-    public <T> ActivityBuilder<E> cooldownMemory(Supplier<MemoryModuleType<T>> cooldownMemory) {
-        return cooldownMemory(cooldownMemory.get());
-    }
-
-    public Set<MemoryModuleType<?>> getActionMemories() {
-        return actionMemories;
-    }
-
     public Activity getActivity() {
         return activity;
-    }
-
-    public Set<Pair<MemoryModuleType<?>, MemoryStatus>> getRequirements() {
-        return requirements;
     }
 
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
@@ -164,6 +112,10 @@ public class ActivityBuilder<E extends LivingEntity> implements IActivityBuilder
 
         for (BehaviorControl<? super E> behavior : behaviors) {
             builder.add(Pair.of(priority++, behavior));
+        }
+
+        if (this.actionHandler != null) {
+            builder.add(Pair.of(priority, this.actionHandler));
         }
 
         return builder.build();

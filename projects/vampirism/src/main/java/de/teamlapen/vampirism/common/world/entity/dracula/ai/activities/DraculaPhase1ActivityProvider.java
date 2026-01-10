@@ -18,7 +18,8 @@ public class DraculaPhase1ActivityProvider extends AiActivityProvider<Dracula> {
                 .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.3f))
                 .requires(ModMemoryTypes.Dracula.PHASE_1, MemoryStatus.VALUE_PRESENT);
 
-        activity.addAction(ModActivities.DRACULA_SUMMON_PROTECTOR)
+        activity.useActions()
+                .addAction(ModActivities.DRACULA_SUMMON_PROTECTOR)
                 .actionMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN)
                 .add(SummonProtectorsBehavior.create(), Collections.emptySet(), SummonProtectorsBehavior.memories())
