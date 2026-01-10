@@ -29,7 +29,7 @@ public class ActionBuilder<E extends LivingEntity> {
     @UnknownNullability
     private MemoryModuleType<Unit> activeMemory;
     @UnknownNullability
-    private MemoryModuleType<Unit> cooldownMemory;
+    private Cooldown cooldown;
     private BiPredicate<ServerLevel, E> canActivate = (a,b) -> true;
     final int startPriority = 10;
 
@@ -93,15 +93,15 @@ public class ActionBuilder<E extends LivingEntity> {
         return activeMemory(actionMemory.get());
     }
 
-    public ActionBuilder<E> cooldownMemory(MemoryModuleType<Unit> cooldownMemory) {
-        this.cooldownMemory = cooldownMemory;
+    public ActionBuilder<E> cooldown(MemoryModuleType<Unit> cooldownMemory, Supplier<Integer> cooldown) {
+        this.cooldown = new Cooldown(cooldownMemory, cooldown);
         this.requirements.add(Pair.of(cooldownMemory, MemoryStatus.VALUE_ABSENT));
         this.memories.add(cooldownMemory);
         return this;
     }
 
-    public ActionBuilder<E> cooldownMemory(Supplier<MemoryModuleType<Unit>> cooldownMemory) {
-        return cooldownMemory(cooldownMemory.get());
+    public ActionBuilder<E> cooldown(Supplier<MemoryModuleType<Unit>> cooldownMemory, Supplier<Integer> cooldown) {
+        return cooldown(cooldownMemory.get(), cooldown);
     }
 
     //</editor-fold>
@@ -115,16 +115,16 @@ public class ActionBuilder<E extends LivingEntity> {
         return builder.build();
     }
 
-    public Action<E> build() {
-        return new Action<>(activity, sensors, memories, activeMemory, cooldownMemory, requirements, canActivate, buildBehaviors());
+    Action<E> build() {
+        return new Action<>(activity, sensors, memories, activeMemory, cooldown, requirements, canActivate, buildBehaviors());
     }
 
-    public record Action<E extends LivingEntity>(
+    record Action<E extends LivingEntity>(
             Activity activity,
             Collection<SensorType<? extends Sensor<? super E>>> sensors,
             Collection<MemoryModuleType<?>> memories,
             MemoryModuleType<Unit> activeMemory,
-            MemoryModuleType<Unit> cooldownMemory,
+            Cooldown cooldownMemory,
             Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements,
             BiPredicate<ServerLevel, E> precondition,
             ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviors
@@ -134,5 +134,11 @@ public class ActionBuilder<E extends LivingEntity> {
             brain.addActivityWithConditions(this.activity, this.behaviors, Sets.union(requirements, this.requirements));
         }
 
+    }
+
+    record Cooldown(MemoryModuleType<Unit> memory, Supplier<Integer> cooldownSupplier) {
+        public int cooldown() {
+            return this.cooldownSupplier.get();
+        }
     }
 }

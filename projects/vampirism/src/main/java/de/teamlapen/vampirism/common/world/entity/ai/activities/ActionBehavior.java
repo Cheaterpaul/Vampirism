@@ -59,7 +59,8 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
         for (ActionBuilder.Action<E> action : this.actions) {
             if (brain.hasMemoryValue(action.activeMemory())) {
                 brain.eraseMemory(action.activeMemory());
-                brain.setMemoryWithExpiry(action.cooldownMemory(), Unit.INSTANCE,100);
+                ActionBuilder.Cooldown cooldown = action.cooldownMemory();
+                brain.setMemoryWithExpiry(cooldown.memory(), Unit.INSTANCE, cooldown.cooldown());
             }
         }
         this.status = Behavior.Status.STOPPED;

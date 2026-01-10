@@ -36,7 +36,7 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
         actions.addAction(ModActivities.DRACULA_REGENERATION, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
-                .cooldownMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN)
+                .cooldown(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN, () -> 20 * 20)
                 .add(new RegenerationBehavior())
                 .canActivate((level, dracula) -> {
                     float v = (dracula.getHealth() / dracula.getMaxHealth());

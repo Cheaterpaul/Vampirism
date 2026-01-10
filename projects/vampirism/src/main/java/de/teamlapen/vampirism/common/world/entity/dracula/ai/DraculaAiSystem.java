@@ -1,7 +1,5 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai;
 
-import com.mojang.datafixers.kinds.Const;
-import com.mojang.datafixers.kinds.IdF;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.util.StreamUtil;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
@@ -11,7 +9,6 @@ import de.teamlapen.vampirism.common.world.entity.dracula.ai.activities.*;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
 import org.jetbrains.annotations.Nullable;
@@ -67,12 +64,5 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
             case RAGED -> ModMemoryTypes.Dracula.PHASE_3.get();
             default -> null;
         };
-    }
-
-    public static void setActionCooldown(MemoryAccessor<Const.Mu<com.mojang.datafixers.util.Unit>, net.minecraft.util.Unit> cooldown, MemoryAccessor<IdF.Mu, net.minecraft.util.Unit> active, MemoryAccessor<Const.Mu<com.mojang.datafixers.util.Unit>, net.minecraft.util.Unit> actionCooldown, MemoryAccessor<IdF.Mu, net.minecraft.util.Unit> actionActive, int actionCooldownTicks) {
-        active.erase();
-        cooldown.setWithExpiry(net.minecraft.util.Unit.INSTANCE, 20 * 20);
-        actionActive.erase();
-        actionCooldown.setWithExpiry(net.minecraft.util.Unit.INSTANCE, actionCooldownTicks);
     }
 }
