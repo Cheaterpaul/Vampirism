@@ -28,7 +28,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
 
     @Override
     public void tickOrStop(ServerLevel level, E entity, long gameTime) {
-
+        doStop(level, entity, gameTime);
     }
 
     @Override
@@ -60,16 +60,6 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
 
     @Override
     public final void doStop(ServerLevel level, E entity, long gameTime) {
-        Brain<?> brain = entity.getBrain();
-        brain.eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        brain.setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, 100);
-        for (ActionBuilder.Action<E> action : this.actions) {
-            if (brain.hasMemoryValue(action.activeMemory())) {
-                brain.eraseMemory(action.activeMemory());
-                ActionBuilder.Cooldown cooldown = action.cooldownMemory();
-                brain.setMemoryWithExpiry(cooldown.memory(), Unit.INSTANCE, cooldown.cooldown());
-            }
-        }
         this.status = Behavior.Status.STOPPED;
     }
 

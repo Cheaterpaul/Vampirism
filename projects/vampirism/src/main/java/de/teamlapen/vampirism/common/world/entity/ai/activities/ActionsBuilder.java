@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 public class ActionsBuilder<E extends LivingEntity> {
 
     private final List<ActionBuilder.Action<E>> actions = new ArrayList<>();
+    private Supplier<Integer> cooldownSupplier = () -> 100;
 
     ActionsBuilder() {
     }
@@ -21,13 +22,18 @@ public class ActionsBuilder<E extends LivingEntity> {
     }
 
     public void addAction(Activity activity, Consumer<ActionBuilder<E>> consumer) {
-        ActionBuilder<E> builder = new ActionBuilder<>(activity);
+        ActionBuilder<E> builder = new ActionBuilder<>(activity, this.cooldownSupplier);
         consumer.accept(builder);
         this.actions.add(builder.build());
     }
 
     public void addAction(Supplier<Activity> activity, Consumer<ActionBuilder<E>> consumer) {
         addAction(activity.get(), consumer);
+    }
+
+    public ActionsBuilder<E> cooldown(Supplier<Integer> cooldownSupplier) {
+        this.cooldownSupplier = cooldownSupplier;
+        return this;
     }
 
 }

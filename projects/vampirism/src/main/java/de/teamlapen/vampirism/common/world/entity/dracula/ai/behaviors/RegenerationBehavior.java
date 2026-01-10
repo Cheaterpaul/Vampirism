@@ -3,7 +3,6 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Unit;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -32,7 +31,7 @@ public class RegenerationBehavior extends Behavior<Dracula> {
     }
 
     private static final int DURATION = 10 * 20;
-    public static final float HEALTH_PERCENTAGE = 0.3f;
+    public static final float HEALTH_PERCENTAGE = 0.2f;
 
     public static RegenerationBehavior create() {
         return new RegenerationBehavior();
@@ -55,15 +54,6 @@ public class RegenerationBehavior extends Behavior<Dracula> {
     @Override
     protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
         return entity.getBrain().getMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get()).isPresent();
-    }
-
-    @Override
-    protected void stop(ServerLevel level, Dracula entity, long gameTime) {
-        Brain<Dracula> brain = entity.getBrain();
-        brain.setMemoryWithExpiry(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(), Unit.INSTANCE, 60*20);
-        brain.eraseMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get());
-        brain.eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        brain.setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, 10*20);
     }
 
     @Override

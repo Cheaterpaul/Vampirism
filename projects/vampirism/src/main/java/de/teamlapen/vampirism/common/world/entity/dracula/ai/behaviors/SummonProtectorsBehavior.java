@@ -74,7 +74,9 @@ public class SummonProtectorsBehavior {
         BasicVampireEntity basicVampireEntity = ModEntities.VAMPIRE.get().create(level, EntitySpawnReason.EVENT);
         if (basicVampireEntity != null) {
             RandomSource random = dracula.getRandom();
-            basicVampireEntity.moveOrInterpolateTo(dracula.position().add( (random.nextDouble() - random.nextDouble()) * 20 + 0.5, random.nextInt(3) - 1, (random.nextDouble() - random.nextDouble()) * 20 + 0.5), random.nextFloat() * 360f, 0);
+            // TODO spawn on ground
+            basicVampireEntity.setPos(dracula.position().add( (random.nextDouble() - random.nextDouble()) * 5 + 0.5, random.nextInt(3) - 1, (random.nextDouble() - random.nextDouble()) * 5 + 0.5));
+            basicVampireEntity.setYRot(random.nextFloat() * 360);
 //            if (level.noCollision(basicVampireEntity)) {
                 level.addFreshEntity(basicVampireEntity);
 //            }

@@ -26,7 +26,7 @@ public class DraculaPhase1ActivityProvider extends AiActivityProvider<Dracula> {
         actions.addAction(ModActivities.DRACULA_SUMMON_PROTECTOR, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE)
                 .cooldown(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN, () -> 20 * 20)
-                .add(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
+                .addLast(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
                 .canActivate((level, dracula) -> dracula.getBrain().getMemory(ModMemoryTypes.SUMMONS.get()).map(List::size).orElse(0) < SummonProtectorsBehavior.MAX_SUMMONS * 0.7));
     }
 }

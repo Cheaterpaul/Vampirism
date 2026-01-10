@@ -276,8 +276,8 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     protected void customServerAiStep(ServerLevel level) {
         if (!this.isTransforming()) {
-            this.getBrain().tick(level, this);
             DraculaAiSystem.AI.tick(level, this);
+            this.getBrain().tick(level, this);
         }
     }
 
@@ -345,6 +345,12 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         }
 
         super.setHealth(health);
+    }
+
+    @Override
+    public void heal(float healAmount) {
+        super.heal(healAmount);
+        updateEvent();
     }
 
     @Override

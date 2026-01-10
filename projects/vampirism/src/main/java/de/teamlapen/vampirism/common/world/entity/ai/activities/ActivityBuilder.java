@@ -60,6 +60,12 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     //<editor-fold desc="Actions">
 
+    public ActionsBuilder<E> useActions(Supplier<Integer> cooldownSupplier) {
+        this.memories.add(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
+        this.memories.add(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get());
+        return this.actionBuilders.cooldown(cooldownSupplier);
+    }
+
     public ActionsBuilder<E> useActions() {
         this.memories.add(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
         this.memories.add(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get());

@@ -29,7 +29,7 @@ public class DraculaPhase2ActivityProvider extends AiActivityProvider<Dracula> {
         actionBuilder.addAction(ModActivities.DRACULA_SUMMON_BATS, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE)
                 .cooldown(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN, () -> 20 * 20)
-                .add(SummonVampireBats.create(), SummonVampireBats.sensors(), SummonVampireBats.memories())
+                .addLast(SummonVampireBats.create(), SummonVampireBats.sensors(), SummonVampireBats.memories())
                 .canActivate((level, dracula) -> dracula.getHealth() < (dracula.getMaxHealth() * 0.7)));
 
         actionBuilder.addAction(ModActivities.DRACULA_FLYING_SWORD, action -> action
@@ -37,11 +37,11 @@ public class DraculaPhase2ActivityProvider extends AiActivityProvider<Dracula> {
                 .cooldown(ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN, () -> 20 * 20)
                 .add(EquipSword.create(), EquipSword.sensors(), EquipSword.memories())
                 .add(FlyingSwordAttack.create(), FlyingSwordAttack.sensors(), FlyingSwordAttack.memories())
-                .add(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories()));
+                .addLast(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories()));
 
         actionBuilder.addAction(ModActivities.DRACULA_FLYING_NEEDLE, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE)
                 .cooldown(ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN, () -> 20 * 20)
-                .add(FlyingNeedleAttack.create(), FlyingNeedleAttack.sensors(), FlyingNeedleAttack.memories()));
+                .addLast(FlyingNeedleAttack.create(), FlyingNeedleAttack.sensors(), FlyingNeedleAttack.memories()));
     }
 }

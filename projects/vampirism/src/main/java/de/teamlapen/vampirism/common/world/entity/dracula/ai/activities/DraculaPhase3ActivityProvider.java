@@ -29,7 +29,7 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
         builder
                 .add(StopAttackingIfTargetInvalid.create(), Set.of(), Set.of(MemoryModuleType.ATTACK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
                 .add(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
-                .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget), Set.of(ModSensors.NEAREST_ENTITY.get()), Set.of(MemoryModuleType.ATTACK_TARGET,MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()))
+                .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget), Set.of(ModSensors.NEAREST_ENTITY.get()), Set.of(MemoryModuleType.ATTACK_TARGET,MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryModuleType.ANGRY_AT))
                 .add(MeleeAttack.create(15), Set.of(SensorType.NEAREST_LIVING_ENTITIES), Set.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
                 .add(DraculaIdleActivityProvider.createIdleLookBehaviors(), DraculaIdleActivityProvider.lookSensors(), DraculaIdleActivityProvider.lookMemories())
                 .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.4f), DraculaIdleActivityProvider.movementSensors(), DraculaIdleActivityProvider.movementMemories())
@@ -39,8 +39,8 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
         actions.addAction(ModActivities.DRACULA_REGENERATION, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
-                .cooldown(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN, () -> 20 * 20)
-                .add(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
+                .cooldown(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN, () -> 60 * 20)
+                .addLast(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
                 .canActivate((level, dracula) -> {
                     float v = (dracula.getHealth() / dracula.getMaxHealth());
                     float gate = 1 - RegenerationBehavior.HEALTH_PERCENTAGE;
