@@ -18,6 +18,7 @@ public class ModActivities {
 
     public static final DeferredHolder<Activity, Activity> DRACULA_REGENERATION = create("dracula.regeneration");
     public static final DeferredHolder<Activity, Activity> DRACULA_FLYING_SWORD = create("dracula.flying_sword");
+    public static final DeferredHolder<Activity, Activity> DRACULA_FLYING_NEEDLE = create("dracula.flying_needle");
 
     private static DeferredHolder<Activity, Activity> create(String name) {
         return ACTIVITIES.register(name, () -> new Activity(VIdentifier.modString(name)));

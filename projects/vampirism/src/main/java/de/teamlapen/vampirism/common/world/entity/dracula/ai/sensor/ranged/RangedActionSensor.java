@@ -9,5 +9,6 @@ public class RangedActionSensor extends ActionSensor {
         super(DraculaState.RANGED);
         addAction(new SummonVampiricBatsAction());
         addAction(new FlyingSwordAction());
+        addAction(new FlyingNeedleAction());
     }
 }

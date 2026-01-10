@@ -71,8 +71,7 @@ public class Phase3Activities extends IdleActivity {
 
     public static Stream<Activity> getActivities() {
         return Stream.of(
-                ModActivities.DRACULA_REGENERATION.get(),
-                ModActivities.DRACULA_PHASE_3.get()
+                ModActivities.DRACULA_REGENERATION.get()
         );
     }
 

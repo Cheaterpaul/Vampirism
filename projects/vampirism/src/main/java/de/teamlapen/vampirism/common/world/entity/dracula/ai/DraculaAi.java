@@ -3,7 +3,9 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.kinds.Const;
 import com.mojang.datafixers.kinds.IdF;
+import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.util.StreamUtil;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.activities.*;
 import net.minecraft.server.level.ServerLevel;
@@ -77,9 +79,9 @@ public class DraculaAi {
         Brain<Dracula> brain = dracula.getBrain();
         brain.setActiveActivityToFirstValid(
                 Stream.of(switch (dracula.getStage()) {
-                    case PHASE_1 -> Phase1Activities.getActivities();
-                    case PHASE_2 -> Phase2Activities.getActivities();
-                    case PHASE_3 -> Phase3Activities.getActivities();
+                    case PHASE_1 -> StreamUtil.append(Phase1Activities.getActivities(), ModActivities.DRACULA_PHASE_1.get());
+                    case PHASE_2 -> StreamUtil.append(Phase2Activities.getActivities(), ModActivities.DRACULA_PHASE_2.get());
+                    case PHASE_3 -> StreamUtil.append(Phase3Activities.getActivities(), ModActivities.DRACULA_PHASE_3.get());
                     default -> Stream.<Activity>of();
                 }, IdleActivity.getActivities())
                         .flatMap(x -> x)

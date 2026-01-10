@@ -45,7 +45,7 @@ public class Phase1Activities extends IdleActivity {
 
     public static Stream<Activity> getActivities() {
         return Stream.of(
-                ModActivities.DRACULA_PHASE_1.get()
+
         );
     }
 }

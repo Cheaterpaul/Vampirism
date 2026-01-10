@@ -8,6 +8,7 @@ import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.SummonVampireBats;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingneedle.FlyingNeedleAttack;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.EquipSword;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.FlyingSwordAttack;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.UnEquipSword;
@@ -40,6 +41,7 @@ public class Phase2Activities extends IdleActivity {
             IdleActivity.MEMORY_MODULES.stream(),
             SummonVampireBats.requires(),
             FlyingSwordAttack.requires(),
+            FlyingNeedleAttack.requires(),
             Stream.of(
                     ModMemoryTypes.Dracula.PHASE_2.get()
             )
@@ -57,16 +59,21 @@ public class Phase2Activities extends IdleActivity {
 
     public static void initActions(Brain<Dracula> brain) {
         ActivityBuilder.<Dracula>create(ModActivities.DRACULA_FLYING_SWORD)
+                .requires(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE, MemoryStatus.VALUE_PRESENT)
                 .add(EquipSword.create())
                 .add(new FlyingSwordAttack())
                 .add(UnEquipSword.create())
+                .register(brain);
+        ActivityBuilder.<Dracula>create(ModActivities.DRACULA_FLYING_NEEDLE)
+                .requires(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE, MemoryStatus.VALUE_PRESENT)
+                .add(new FlyingNeedleAttack())
                 .register(brain);
     }
 
     public static Stream<Activity> getActivities() {
         return Stream.of(
                 ModActivities.DRACULA_FLYING_SWORD.get(),
-                ModActivities.DRACULA_PHASE_2.get()
+                ModActivities.DRACULA_FLYING_NEEDLE.get()
         );
     }
 
