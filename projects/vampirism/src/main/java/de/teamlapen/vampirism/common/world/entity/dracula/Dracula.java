@@ -3,7 +3,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula;
 import com.mojang.serialization.Dynamic;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
-import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAiSystem;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -257,6 +257,8 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     //<editor-fold desc="Brain">
 
+    private final DraculaAiSystem aiSystem = new DraculaAiSystem(this);
+
     @SuppressWarnings("unchecked")
     @Override
     public Brain<Dracula> getBrain() {
@@ -265,20 +267,21 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     @Override
     protected Brain<?> makeBrain(Dynamic<?> dynamic) {
-        return DraculaAi.makeBrain(this, this.brainProvider().makeBrain(dynamic));
+        Brain<Dracula> brain = this.brainProvider().makeBrain(dynamic);
+        this.aiSystem.initializeBrain(brain);
+        return brain;
     }
 
     @Override
     protected Brain.Provider<Dracula> brainProvider() {
-        return Brain.provider(DraculaAi.MEMORY_TYPES, DraculaAi.SENSOR_TYPES);
+        return Brain.provider(this.aiSystem.getMemoryModules(), this.aiSystem.getSensors());
     }
 
     @Override
     protected void customServerAiStep(ServerLevel level) {
         if (!this.isTransforming()) {
             this.getBrain().tick(level, this);
-            DraculaAi.updateMemories(this);
-            DraculaAi.updateActivity(this, level);
+            this.aiSystem.update(level);
         }
     }
 
@@ -330,7 +333,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         this.setState(nextStage);
         updateAttributes(getStage());
         if (level() instanceof ServerLevel serverLevel) {
-            DraculaAi.stop(this, serverLevel);
+            this.aiSystem.stop(serverLevel);
         }
         updateEvent();
     }

@@ -4,7 +4,7 @@ import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.BlindingBatEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAiSystem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.SpawnUtil;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -32,7 +32,7 @@ public class SummonVampireBats {
                 ).apply(inst, (cooldown, active, used, using) ->
                         (level, dracula, gameTime) -> {
                             summonBats(level, dracula);
-                            DraculaAi.setActionCooldown(cooldown, active, used, using, 20*20);
+                            DraculaAiSystem.setActionCooldown(cooldown, active, used, using, 20*20);
                             return true;
                         })
         );
