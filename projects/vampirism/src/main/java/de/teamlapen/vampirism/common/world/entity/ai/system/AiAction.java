@@ -6,6 +6,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
+import net.minecraft.world.entity.schedule.Activity;
+
 import java.util.List;
 
 public interface AiAction<E extends LivingEntity> {
@@ -20,4 +22,5 @@ public interface AiAction<E extends LivingEntity> {
 
     MemoryModuleType<Unit> getCooldownMemory();
 
+    Activity getActivity();
 }

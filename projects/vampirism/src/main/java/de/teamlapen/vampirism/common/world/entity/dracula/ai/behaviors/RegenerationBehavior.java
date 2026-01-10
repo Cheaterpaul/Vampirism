@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
@@ -8,11 +9,19 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
-public class RegenerationBehavior extends Behavior<Dracula> {
+public class RegenerationBehavior extends Behavior<Dracula> implements IInformativeBehavior {
+
+    @Override
+    public Set<MemoryModuleType<?>> getMemories() {
+        return Set.of(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(), ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get(), ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
+    }
 
     public static Stream<MemoryModuleType<?>> requires() {
         return Stream.of(

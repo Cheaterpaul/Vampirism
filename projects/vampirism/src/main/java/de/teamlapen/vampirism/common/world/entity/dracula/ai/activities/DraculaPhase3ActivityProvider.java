@@ -2,7 +2,6 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
 import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.RegenerationBehavior;
@@ -13,27 +12,12 @@ import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
-import net.minecraft.world.entity.ai.sensing.SensorType;
 
 import java.util.Optional;
 
 public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaPhase3ActivityProvider() {
-        addSensor(ModSensors.NEAREST_ENTITY.get());
-        addSensor(ModSensors.DRACULA_RAGE_ACTION.get());
-
-        addMemory(ModMemoryTypes.Dracula.PHASE_3.get());
-        addMemory(MemoryModuleType.LOOK_TARGET);
-        addMemory(MemoryModuleType.ATTACK_TARGET);
-        addMemory(MemoryModuleType.ATTACK_COOLING_DOWN);
-        addMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-        addMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-        addMemory(MemoryModuleType.ANGRY_AT);
-        addMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get());
-        addMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get());
-        addMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get());
-
         addAction(new RegenerationAction());
 
         createActivity(ModActivities.DRACULA_PHASE_3)

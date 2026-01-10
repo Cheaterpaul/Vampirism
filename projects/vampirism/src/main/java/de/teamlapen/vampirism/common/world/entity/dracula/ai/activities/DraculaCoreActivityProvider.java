@@ -9,23 +9,26 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
+import java.util.Set;
+
 public class DraculaCoreActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaCoreActivityProvider() {
-        addSensor(SensorType.HURT_BY);
-        addSensor(SensorType.NEAREST_LIVING_ENTITIES);
-
-        addMemory(MemoryModuleType.LOOK_TARGET);
-        addMemory(MemoryModuleType.WALK_TARGET);
-        addMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-        addMemory(MemoryModuleType.PATH);
-        addMemory(MemoryModuleType.ATTACK_TARGET);
-        addMemory(MemoryModuleType.HURT_BY);
-        addMemory(MemoryModuleType.HURT_BY_ENTITY);
-
         createActivity(Activity.CORE)
                 .add(new Swim<>(0.8f))
-                .add(new LookAtTargetSink(45, 90))
-                .add(new MoveToTargetSink());
+                .add(new LookAtTargetSink(45, 90), Set.of(), Set.of(
+                        MemoryModuleType.LOOK_TARGET
+                ))
+                .add(new MoveToTargetSink(), Set.of(
+                                SensorType.NEAREST_LIVING_ENTITIES,
+                                SensorType.HURT_BY
+                        ), Set.of(
+                        MemoryModuleType.LOOK_TARGET,
+                        MemoryModuleType.WALK_TARGET,
+                        MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
+                        MemoryModuleType.PATH,
+                        MemoryModuleType.ATTACK_TARGET,
+                        MemoryModuleType.HURT_BY,
+                        MemoryModuleType.HURT_BY_ENTITY));
     }
 }

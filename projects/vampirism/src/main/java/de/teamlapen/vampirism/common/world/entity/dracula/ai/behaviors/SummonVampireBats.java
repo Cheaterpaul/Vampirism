@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SummonVampireBats {
@@ -36,6 +37,10 @@ public class SummonVampireBats {
                             return true;
                         })
         );
+    }
+
+    public static Set<MemoryModuleType<?>> memories() {
+        return Set.of(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get(), ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get());
     }
 
     protected static void summonBats(ServerLevel level, Dracula dracula) {

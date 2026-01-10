@@ -1,5 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.sensor.passive;
 
+import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.SummonProtectorsBehavior;
@@ -8,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.List;
 
@@ -31,5 +33,10 @@ public class SummonAction implements IDraculaAction {
     @Override
     public MemoryModuleType<Unit> getCooldownMemory() {
         return ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get();
+    }
+
+    @Override
+    public Activity getActivity() {
+        return ModActivities.DRACULA_PHASE_1.get();
     }
 }

@@ -36,7 +36,11 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
      * Returns the sensors required specifically for this activity set.
      */
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-        return sensors;
+        Set<SensorType<? extends Sensor<? super E>>> allSensors = new HashSet<>(sensors);
+        for (ActivityBuilder<E> builder : builders) {
+            allSensors.addAll(builder.getSensors());
+        }
+        return allSensors;
     }
 
     /**
@@ -45,6 +49,7 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
     public Set<MemoryModuleType<?>> getMemoryModules() {
         Set<MemoryModuleType<?>> allMemories = new HashSet<>(memories);
         for (ActivityBuilder<E> builder : builders) {
+            allMemories.addAll(builder.getMemories());
             allMemories.addAll(builder.getRequirements().stream().map(Pair::getFirst).collect(Collectors.toSet()));
         }
         return allMemories;

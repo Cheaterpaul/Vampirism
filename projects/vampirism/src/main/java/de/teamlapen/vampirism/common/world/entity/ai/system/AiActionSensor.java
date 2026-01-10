@@ -39,6 +39,7 @@ public class AiActionSensor<E extends LivingEntity> extends Sensor<E> {
         first.ifPresent(action -> {
             brain.setMemory(action.getActionMemory(), Unit.INSTANCE);
             brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), Unit.INSTANCE);
+            brain.setActiveActivityIfPossible(action.getActivity());
         });
     }
 

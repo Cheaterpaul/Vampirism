@@ -7,6 +7,8 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.ArrayList;
@@ -20,6 +22,8 @@ public class ActivityBuilder<E extends LivingEntity> {
     private final Activity activity;
     private final Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements = new HashSet<>();
     private final List<BehaviorControl<? super E>> behaviors = new ArrayList<>();
+    private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
+    private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     private int startPriority = 10;
 
     public ActivityBuilder(Activity activity) {
@@ -60,6 +64,18 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     public ActivityBuilder<E> add(BehaviorControl<? super E> control) {
         this.behaviors.add(control);
+        if (control instanceof IInformativeBehavior informative) {
+            //noinspection unchecked
+            this.sensors.addAll((Set<? extends SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors());
+            this.memories.addAll(informative.getMemories());
+        }
+        return this;
+    }
+
+    public ActivityBuilder<E> add(BehaviorControl<? super E> control, Set<SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
+        this.behaviors.add(control);
+        this.sensors.addAll(sensors);
+        this.memories.addAll(memories);
         return this;
     }
 
@@ -74,6 +90,14 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     public Set<Pair<MemoryModuleType<?>, MemoryStatus>> getRequirements() {
         return requirements;
+    }
+
+    public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
+        return sensors;
+    }
+
+    public Set<MemoryModuleType<?>> getMemories() {
+        return memories;
     }
 
     public void register(Brain<E> brain) {
