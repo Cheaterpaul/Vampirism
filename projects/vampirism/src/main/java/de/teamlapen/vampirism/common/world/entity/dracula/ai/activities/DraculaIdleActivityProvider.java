@@ -1,35 +1,48 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
+import com.google.common.collect.ImmutableList;
+import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.DoNothing;
+import net.minecraft.world.entity.ai.behavior.RandomStroll;
+import net.minecraft.world.entity.ai.behavior.RunOne;
+import net.minecraft.world.entity.ai.behavior.SetEntityLookTarget;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
-import java.util.Set;
-import java.util.stream.Stream;
-
 public class DraculaIdleActivityProvider extends AiActivityProvider<Dracula> {
 
-    @Override
-    public Set<SensorType<? extends Sensor<? super Dracula>>> getSensors() {
-        return (Set<SensorType<? extends Sensor<? super Dracula>>>) IdleActivity.SENSORS;
+    public DraculaIdleActivityProvider() {
+        addSensor(SensorType.NEAREST_LIVING_ENTITIES);
+
+        addMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
+        addMemory(MemoryModuleType.LOOK_TARGET);
+        addMemory(MemoryModuleType.WALK_TARGET);
+
+        createActivity(Activity.IDLE)
+                .add(new RunOne<>(
+                        ImmutableList.of(
+                                Pair.of(createIdleLookBehaviors(), 2),
+                                Pair.of(createIdleMovementBehaviors(0.2f), 1)
+                        )));
     }
 
-    @Override
-    public Set<MemoryModuleType<?>> getMemoryModules() {
-        return (Set<MemoryModuleType<?>>) IdleActivity.MEMORY_MODULES;
+    public static RunOne<Dracula> createIdleMovementBehaviors(float speed) {
+        return new RunOne<>(
+                ImmutableList.of(
+                        Pair.of(RandomStroll.stroll(speed), 1),
+                        Pair.of(new DoNothing(30, 60), 1))
+        );
     }
 
-    @Override
-    public void initActivity(Brain<Dracula> brain) {
-        IdleActivity.initActivity(brain);
-    }
-
-    @Override
-    public Stream<Activity> getActiveActivities() {
-        return IdleActivity.getActivities();
+    public static RunOne<Dracula> createIdleLookBehaviors() {
+        return new RunOne<>(
+                ImmutableList.of(
+                        Pair.of(SetEntityLookTarget.create(8.0F), 1),
+                        Pair.of(new DoNothing(30, 60), 1)
+                )
+        );
     }
 }

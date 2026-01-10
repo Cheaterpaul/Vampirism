@@ -58,7 +58,7 @@ public class ActivityBuilder<E extends LivingEntity> {
         return this;
     }
 
-    public <T extends BehaviorControl<? super E>> ActivityBuilder<E> add(T control) {
+    public ActivityBuilder<E> add(BehaviorControl<? super E> control) {
         this.behaviors.add(control);
         return this;
     }
@@ -66,6 +66,14 @@ public class ActivityBuilder<E extends LivingEntity> {
     public ActivityBuilder<E> add(BehaviorBuilder<E> builder) {
         this.behaviors.addAll(builder.getBehaviors());
         return this;
+    }
+
+    public Activity getActivity() {
+        return activity;
+    }
+
+    public Set<Pair<MemoryModuleType<?>, MemoryStatus>> getRequirements() {
+        return requirements;
     }
 
     public void register(Brain<E> brain) {

@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,11 @@ public abstract class AiSystem<E extends LivingEntity> {
     /**
      * Define core, idle, and default activities.
      */
-    protected abstract void setupBrainPriorities(Brain<E> brain);
+    protected void setupBrainPriorities(Brain<E> brain) {
+        brain.setCoreActivities(ImmutableSet.of(Activity.CORE));
+        brain.setDefaultActivity(Activity.IDLE);
+        brain.useDefaultActivity();
+    }
 
     public abstract void update(ServerLevel level);
 

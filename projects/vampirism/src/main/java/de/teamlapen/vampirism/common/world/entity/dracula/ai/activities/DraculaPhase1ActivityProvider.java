@@ -1,36 +1,30 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
 import de.teamlapen.vampirism.common.core.ModActivities;
+import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.sensing.Sensor;
-import net.minecraft.world.entity.ai.sensing.SensorType;
-import net.minecraft.world.entity.schedule.Activity;
-
-import java.util.Set;
-import java.util.stream.Stream;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.SummonProtectorsBehavior;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.sensor.passive.SummonAction;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
 public class DraculaPhase1ActivityProvider extends AiActivityProvider<Dracula> {
 
-    @Override
-    public Set<SensorType<? extends Sensor<? super Dracula>>> getSensors() {
-        return (Set<SensorType<? extends Sensor<? super Dracula>>>) Phase1Activities.SENSORS;
-    }
+    public DraculaPhase1ActivityProvider() {
+        addSensor(ModSensors.DRACULA_PASSIVE_ACTION.get());
 
-    @Override
-    public Set<MemoryModuleType<?>> getMemoryModules() {
-        return (Set<MemoryModuleType<?>>) Phase1Activities.MEMORY_MODULES;
-    }
+        addMemory(ModMemoryTypes.Dracula.PHASE_1.get());
+        addMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get());
+        addMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get());
+        addMemory(ModMemoryTypes.SUMMONS.get());
 
-    @Override
-    public void initActivity(Brain<Dracula> brain) {
-        Phase1Activities.initActivity(brain);
-    }
+        addAction(new SummonAction());
 
-    @Override
-    public Stream<Activity> getActiveActivities() {
-        return Stream.concat(Phase1Activities.getActivities(), Stream.of(ModActivities.DRACULA_PHASE_1.get()));
+        createActivity(ModActivities.DRACULA_PHASE_1)
+                .add(SummonProtectorsBehavior.create())
+                .add(DraculaIdleActivityProvider.createIdleLookBehaviors())
+                .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.3f))
+                .requires(ModMemoryTypes.Dracula.PHASE_1, MemoryStatus.VALUE_PRESENT);
     }
 }
