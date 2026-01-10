@@ -29,7 +29,7 @@ public class ActivityBuilder<E extends LivingEntity> {
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     private final ActionsBuilder<E> actionBuilders = new ActionsBuilder<>();
 
-    private int startPriority = 10;
+    private int startPriority = 20;
 
     public ActivityBuilder(Activity activity) {
         this.activity = activity;

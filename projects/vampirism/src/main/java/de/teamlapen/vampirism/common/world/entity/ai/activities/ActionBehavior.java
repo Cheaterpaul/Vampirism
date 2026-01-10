@@ -8,6 +8,8 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E> {
@@ -15,7 +17,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
     private final List<ActionBuilder.Action<E>> actions;
     private Behavior.Status status = Behavior.Status.STOPPED;
 
-    public ActionBehavior(List<ActionBuilder.Action<E>> builder) {
+    ActionBehavior(List<ActionBuilder.Action<E>> builder) {
         this.actions = builder;
     }
 
@@ -26,7 +28,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
 
     @Override
     public void tickOrStop(ServerLevel level, E entity, long gameTime) {
-        this.doStop(level, entity, gameTime);
+
     }
 
     @Override
@@ -37,15 +39,20 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
             return false;
         }
 
+        var actions = new ArrayList<>(this.actions);
+        Collections.shuffle(actions);
+
         for (ActionBuilder.Action<E> action : actions) {
-            if (action.requirements().stream().allMatch(pair -> brain.checkMemory(pair.getFirst(), pair.getSecond()))) {
-                if (action.precondition().test(level, entity)) {
-                    brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
-                    brain.setMemory(action.activeMemory(), Unit.INSTANCE);
-                    brain.setActiveActivityIfPossible(action.activity());
-                    this.status = Behavior.Status.RUNNING;
-                    return true;
-                }
+            if (brain.hasMemoryValue(action.cooldownMemory().memory())) {
+                continue;
+            }
+
+            if (action.requirements().stream().allMatch(pair -> brain.checkMemory(pair.getFirst(), pair.getSecond())) && action.precondition().test(level, entity)) {
+                brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
+                brain.setMemory(action.activeMemory(), Unit.INSTANCE);
+                brain.setActiveActivityIfPossible(action.activity());
+                this.status = Behavior.Status.RUNNING;
+                return true;
             }
         }
         return false;
@@ -68,7 +75,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
 
     @Override
     public String debugString() {
-        return "ActionHandler";
+        return "ActionBehavior";
     }
 
 

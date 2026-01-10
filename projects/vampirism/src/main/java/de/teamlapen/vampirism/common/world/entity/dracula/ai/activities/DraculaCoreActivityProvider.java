@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
 import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
 import net.minecraft.world.entity.ai.behavior.Swim;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
@@ -20,20 +21,36 @@ public class DraculaCoreActivityProvider extends AiActivityProvider<Dracula> {
 
     @Override
     protected void createActivity(ActivityBuilder<Dracula> builder) {
-        builder
-                .startPriority(0)
+        builder.startPriority(0)
                 .add(new Swim<>(0.8f))
-                .add(new LookAtTargetSink(45, 90), Set.of(), Set.of(MemoryModuleType.LOOK_TARGET))
-                .add(new MoveToTargetSink(), Set.of(
-                        SensorType.NEAREST_LIVING_ENTITIES,
-                        SensorType.HURT_BY
-                ), Set.of(
-                        MemoryModuleType.LOOK_TARGET,
-                        MemoryModuleType.WALK_TARGET,
-                        MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
-                        MemoryModuleType.PATH,
-                        MemoryModuleType.ATTACK_TARGET,
-                        MemoryModuleType.HURT_BY,
-                        MemoryModuleType.HURT_BY_ENTITY));
+                .add(new LookAtTargetSink(45, 90), lookSensors(), lookMemories())
+                .add(new MoveToTargetSink(), moveSensors(), moveMemories());
     }
+
+    private Set<SensorType<? extends Sensor<? super Dracula>>> moveSensors() {
+        return Set.of(
+                SensorType.NEAREST_LIVING_ENTITIES,
+                SensorType.HURT_BY
+        );
+    }
+
+    private Set<MemoryModuleType<?>> moveMemories() {
+        return Set.of(
+                MemoryModuleType.LOOK_TARGET,
+                MemoryModuleType.WALK_TARGET,
+                MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
+                MemoryModuleType.PATH,
+                MemoryModuleType.ATTACK_TARGET,
+                MemoryModuleType.HURT_BY,
+                MemoryModuleType.HURT_BY_ENTITY);
+    }
+
+    private Set<SensorType<? extends Sensor<? super Dracula>>> lookSensors() {
+        return Set.of();
+    }
+
+    private Set<MemoryModuleType<?>> lookMemories() {
+        return Set.of(MemoryModuleType.LOOK_TARGET);
+    }
+
 }

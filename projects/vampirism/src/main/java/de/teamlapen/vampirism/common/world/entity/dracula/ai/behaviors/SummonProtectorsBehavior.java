@@ -2,7 +2,6 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.vampire.BasicVampireEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -21,12 +20,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public class SummonProtectorsBehavior {
 
-    public static Stream<MemoryModuleType<?>> requires() {
-        return Stream.of(
+    public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
+        return Set.of();
+    }
+
+    public static Set<MemoryModuleType<?>> memories() {
+        return Set.of(
                 ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get(),
                 ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get(),
                 ModMemoryTypes.SUMMONS.get()
@@ -35,38 +37,13 @@ public class SummonProtectorsBehavior {
 
     public static final int MAX_SUMMONS = 10;
 
-    public static class SummonProtectorsInformativeOneShot<E extends Dracula> extends OneShot<E> implements IInformativeBehavior<E> {
-        private final OneShot<E> delegate;
-
-        public SummonProtectorsInformativeOneShot(OneShot<E> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean trigger(ServerLevel level, E entity, long gameTime) {
-            return delegate.trigger(level, entity, gameTime);
-        }
-
-        @Override
-        public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-            return Set.of();
-        }
-
-        @Override
-        public Set<MemoryModuleType<?>> getMemories() {
-            return SummonProtectorsBehavior.memories();
-        }
-    }
-
     public static OneShot<Dracula> create() {
-        return new SummonProtectorsInformativeOneShot<>(BehaviorBuilder.create(
+        return BehaviorBuilder.create(
                 inst -> inst.group(
-                        inst.absent(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get()),
-                        inst.present(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()),
                         inst.absent(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get()),
                         inst.present(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get()),
                         inst.registered(ModMemoryTypes.SUMMONS.get())
-                ).apply(inst, (cooldown, active, used, using, summons) ->
+                ).apply(inst, (used, using, summons) ->
                         ((level, dracula, gameTime) -> {
                             Brain<Dracula> brain = dracula.getBrain();
                             List<UUID> uuids = brain.getMemory(ModMemoryTypes.SUMMONS.get()).orElseGet(List::of);
@@ -89,11 +66,7 @@ public class SummonProtectorsBehavior {
                             return true;
                         })
 
-                )));
-    }
-
-    public static Set<MemoryModuleType<?>> memories() {
-        return Set.of(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get(), ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get(), ModMemoryTypes.SUMMONS.get());
+                ));
     }
 
 

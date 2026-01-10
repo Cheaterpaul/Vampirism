@@ -1,7 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FlyingSwordAttack extends Behavior<Dracula> implements IInformativeBehavior {
+public class FlyingSwordAttack extends Behavior<Dracula> {
 
     private enum Phase {
         CHANNELING,
@@ -34,6 +33,23 @@ public class FlyingSwordAttack extends Behavior<Dracula> implements IInformative
     private int totalAttacks = 0;
     private final List<LivingEntity> targets = new ArrayList<>();
 
+    public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+    }
+
+    public static Set<MemoryModuleType<?>> memories() {
+        return Set.of(
+                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(),
+                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(),
+                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(),
+                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
+        );
+    }
+
+    public static FlyingSwordAttack create() {
+        return new FlyingSwordAttack();
+    }
+
     public FlyingSwordAttack() {
         super(Map.of(
                 ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
@@ -41,21 +57,6 @@ public class FlyingSwordAttack extends Behavior<Dracula> implements IInformative
                 ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(), MemoryStatus.VALUE_PRESENT,
                 MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
         ), 400);
-    }
-
-    @Override
-    public Set<SensorType<? extends Sensor<?>>> getSensors() {
-        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
-    }
-
-    @Override
-    public Set<MemoryModuleType<?>> getMemories() {
-        return Set.of(
-                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(),
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
-        );
     }
 
     @Override

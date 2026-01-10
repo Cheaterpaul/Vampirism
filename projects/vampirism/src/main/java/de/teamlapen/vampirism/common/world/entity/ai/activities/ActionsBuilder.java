@@ -4,6 +4,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -15,8 +16,8 @@ public class ActionsBuilder<E extends LivingEntity> {
     ActionsBuilder() {
     }
 
-    public List<ActionBuilder.Action<E>> actions() {
-        return actions;
+    List<ActionBuilder.Action<E>> actions() {
+        return Collections.unmodifiableList(actions);
     }
 
     public void addAction(Activity activity, Consumer<ActionBuilder<E>> consumer) {

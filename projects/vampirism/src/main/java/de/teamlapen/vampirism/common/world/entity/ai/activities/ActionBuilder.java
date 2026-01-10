@@ -1,7 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.ai.activities;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
@@ -18,6 +17,8 @@ import org.jetbrains.annotations.UnknownNullability;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ActionBuilder<E extends LivingEntity> {
 
@@ -31,7 +32,7 @@ public class ActionBuilder<E extends LivingEntity> {
     @UnknownNullability
     private Cooldown cooldown;
     private BiPredicate<ServerLevel, E> canActivate = (a,b) -> true;
-    final int startPriority = 10;
+    private int startPriority = 10;
 
     public ActionBuilder(Activity activity) {
         this.activity = activity;
@@ -68,6 +69,15 @@ public class ActionBuilder<E extends LivingEntity> {
         return this;
     }
 
+    ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> buildBehaviors() {
+        ImmutableList.Builder<Pair<Integer, ? extends BehaviorControl<? super E>>> builder = ImmutableList.builder();
+        int priority = this.startPriority;
+        for (BehaviorControl<? super E> behavior : this.behaviors) {
+            builder.add(Pair.of(priority++, behavior));
+        }
+        return builder.build();
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="Preconditions">
@@ -84,7 +94,6 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> activeMemory(MemoryModuleType<Unit> actionMemory) {
         this.activeMemory = actionMemory;
-        this.requirements.add(Pair.of(actionMemory, MemoryStatus.VALUE_PRESENT));
         this.memories.add(actionMemory);
         return this;
     }
@@ -95,7 +104,6 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> cooldown(MemoryModuleType<Unit> cooldownMemory, Supplier<Integer> cooldown) {
         this.cooldown = new Cooldown(cooldownMemory, cooldown);
-        this.requirements.add(Pair.of(cooldownMemory, MemoryStatus.VALUE_ABSENT));
         this.memories.add(cooldownMemory);
         return this;
     }
@@ -106,14 +114,14 @@ public class ActionBuilder<E extends LivingEntity> {
 
     //</editor-fold>
 
-    ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> buildBehaviors() {
-        ImmutableList.Builder<Pair<Integer, ? extends BehaviorControl<? super E>>> builder = ImmutableList.builder();
-        int priority = this.startPriority;
-        for (BehaviorControl<? super E> behavior : this.behaviors) {
-            builder.add(Pair.of(priority++, behavior));
-        }
-        return builder.build();
+    //<editor-fold desc="Priority">
+
+    public ActionBuilder<E> priority(int priority) {
+        this.startPriority = priority;
+        return this;
     }
+
+    //</editor-fold>
 
     Action<E> build() {
         return new Action<>(activity, sensors, memories, activeMemory, cooldown, requirements, canActivate, buildBehaviors());
@@ -129,9 +137,9 @@ public class ActionBuilder<E extends LivingEntity> {
             BiPredicate<ServerLevel, E> precondition,
             ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviors
     ) {
-
         public void register(Brain<E> brain, Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements) {
-            brain.addActivityWithConditions(this.activity, this.behaviors, Sets.union(requirements, this.requirements));
+            Stream<Stream<Pair<MemoryModuleType<?>, MemoryStatus>>> stream = Stream.of(requirements.stream(), this.requirements.stream(), Stream.of(Pair.of(activeMemory, MemoryStatus.VALUE_PRESENT), Pair.of(cooldownMemory.memory, MemoryStatus.VALUE_ABSENT)));
+            brain.addActivityWithConditions(this.activity, this.behaviors, stream.flatMap(x -> x).collect(Collectors.toUnmodifiableSet()));
         }
 
     }

@@ -1,9 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -16,31 +14,16 @@ import java.util.Set;
 
 public class UnEquipSword {
 
-    public static class UnEquipSwordInformativeOneShot<E extends Dracula> extends OneShot<E> implements IInformativeBehavior<E> {
-        private final OneShot<E> delegate;
+    public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
+        return Set.of();
+    }
 
-        public UnEquipSwordInformativeOneShot(OneShot<E> delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean trigger(ServerLevel level, E entity, long gameTime) {
-            return delegate.trigger(level, entity, gameTime);
-        }
-
-        @Override
-        public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-            return Set.of();
-        }
-
-        @Override
-        public Set<MemoryModuleType<?>> getMemories() {
-            return Set.of(ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(), ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get());
-        }
+    public static Set<MemoryModuleType<?>> memories() {
+        return Set.of(ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(), ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get());
     }
 
     public static OneShot<Dracula> create() {
-        return new UnEquipSwordInformativeOneShot<>(BehaviorBuilder.create(inst -> inst.group(
+        return BehaviorBuilder.create(inst -> inst.group(
                 inst.present(ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get()),
                 inst.absent(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get())
         ).apply(inst, (equipped, active) ->
@@ -48,6 +31,6 @@ public class UnEquipSword {
             dracula.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             equipped.erase();
             return true;
-        })));
+        }));
     }
 }

@@ -1,7 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingneedle;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -14,13 +13,14 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativeBehavior {
+public class FlyingNeedleAttack extends Behavior<Dracula> {
 
     private enum Phase {
         CHARGING,
@@ -32,6 +32,21 @@ public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativ
     private final List<FlyingNeedleEntity> needles = new ArrayList<>();
     private final List<LivingEntity> targets = new ArrayList<>();
 
+    public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+    }
+
+    public static Set<MemoryModuleType<?>> memories() {
+        return Set.of(
+                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(),
+                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(),
+                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
+        );
+    }
+
+    public static FlyingNeedleAttack create() {
+        return new FlyingNeedleAttack();
+    }
     public FlyingNeedleAttack() {
         super(Map.of(
                 ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
@@ -40,22 +55,10 @@ public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativ
         ), 400);
     }
 
-    @Override
-    public Set<SensorType<? extends Sensor<?>>> getSensors() {
-        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
-    }
+
 
     @Override
-    public Set<MemoryModuleType<?>> getMemories() {
-        return Set.of(
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(),
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
-        );
-    }
-
-    @Override
-    protected void start(ServerLevel level, Dracula entity, long gameTime) {
+    protected void start(@NonNull ServerLevel level, Dracula entity, long gameTime) {
         this.phase = Phase.CHARGING;
         this.ticks = 0;
         this.needles.clear();
@@ -64,7 +67,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativ
     }
 
     @Override
-    protected void tick(ServerLevel level, Dracula entity, long gameTime) {
+    protected void tick(@NonNull ServerLevel level, Dracula entity, long gameTime) {
         this.ticks++;
         entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 
@@ -134,12 +137,12 @@ public class FlyingNeedleAttack extends Behavior<Dracula> implements IInformativ
     }
 
     @Override
-    protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
+    protected boolean canStillUse(@NonNull ServerLevel level, Dracula entity, long gameTime) {
         return entity.getBrain().hasMemoryValue(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
     }
 
     @Override
-    protected void stop(ServerLevel level, Dracula entity, long gameTime) {
+    protected void stop(@NonNull ServerLevel level, Dracula entity, long gameTime) {
         entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(), Unit.INSTANCE, 300);
         entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
         entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
