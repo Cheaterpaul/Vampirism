@@ -56,7 +56,6 @@ public class Phase2Activities extends IdleActivity {
     public static void initActions(Brain<Dracula> brain) {
         ActivityBuilder.<Dracula>create(ModActivities.DRACULA_FLYING_SWORD)
                 .add(UnEquipSword.create())
-
                 .add(EquipSword.create())
                 .register(brain);
     }

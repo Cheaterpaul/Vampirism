@@ -1,7 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula;
 
 import com.mojang.serialization.Dynamic;
-import de.teamlapen.vampirism.client.core.ModEntityRenderStates;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAi;
@@ -113,7 +112,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @SuppressWarnings("SwitchStatementWithTooFewBranches")
     private static double createMovementSpeed(FightStage stage) {
         return switch (stage) {
-            case PHASE_3 -> 0.8d;
+            case PHASE_3 -> 0.75d;
             default -> 0.7d;
         };
     }
@@ -200,13 +199,32 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("Walk/Run/Idle", test -> {
-            if (test.getDataOrDefault(ModEntityRenderStates.DRACULA_TRANSFORMING, false)) {
+            if (Dracula.this.getState().isTransforming) {
                 return PlayState.STOP;
             }
             if (test.isMoving()) {
                 return test.setAndContinue(isSprinting() ? DefaultAnimations.RUN : DefaultAnimations.WALK);
             }
             return test.setAndContinue(DefaultAnimations.IDLE);
+        }));
+        controllers.add(new AnimationController<>("Attack", test -> {
+            DraculaState state = Dracula.this.getState();
+            if (state.isTransforming) {
+                return PlayState.STOP;
+            }
+            if (Dracula.this.swinging) {
+                return switch (state.stage) {
+                    case PHASE_3 -> {
+                        var animation = test.controller().getCurrentRawAnimation();
+                        if (animation == null) {
+                            animation = Dracula.this.random.nextBoolean() ? IDraculaAnimations.PHASE_3_ATTACK_1 : IDraculaAnimations.PHASE_3_ATTACK_2;
+                        }
+                        yield test.setAndContinue(animation);
+                    }
+                    default -> PlayState.STOP;
+                };
+            }
+            return PlayState.STOP;
         }));
     }
 
