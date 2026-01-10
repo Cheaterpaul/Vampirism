@@ -4,34 +4,35 @@ import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
-import net.minecraft.world.entity.ai.behavior.GateBehavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
 public class ActionHandler<E extends LivingEntity> implements BehaviorControl<E> {
 
     private final List<ActionBuilder<E>> actions;
-    private net.minecraft.world.entity.ai.behavior.Status status = net.minecraft.world.entity.ai.behavior.Status.STOPPED;
+    private Behavior.Status status = Behavior.Status.STOPPED;
 
     public ActionHandler(List<ActionBuilder<E>> actions) {
         this.actions = actions;
     }
 
     @Override
-    public net.minecraft.world.entity.ai.behavior.Status getStatus() {
+    public Behavior.@NonNull Status getStatus() {
         return this.status;
     }
 
     @Override
-    public void tickOrStop(ServerLevel level, E entity, long gameTime) {
+    public void tickOrStop(@NonNull ServerLevel level, E entity, long gameTime) {
         this.doStop(level, entity, gameTime);
     }
 
     @Override
-    public boolean tryStart(ServerLevel level, E entity, long gameTime) {
-        Brain<?> brain = entity.getBrain();
+    public final boolean tryStart(@NonNull ServerLevel level, E entity, long gameTime) {
+        Brain<E> brain = (Brain<E>) entity.getBrain();
         if (brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()) || brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get())) {
             return false;
         }
@@ -44,7 +45,7 @@ public class ActionHandler<E extends LivingEntity> implements BehaviorControl<E>
                     if (action.getActivity() != null) {
                         brain.setActiveActivityIfPossible(action.getActivity());
                     }
-                    this.status = net.minecraft.world.entity.ai.behavior.Status.RUNNING;
+                    this.status = Behavior.Status.RUNNING;
                     return true;
                 }
             }
@@ -52,15 +53,13 @@ public class ActionHandler<E extends LivingEntity> implements BehaviorControl<E>
         return false;
     }
 
-    public void tick(ServerLevel level, E entity, long gameTime) {
-    }
-
-    public void doStop(ServerLevel level, E entity, long gameTime) {
-        this.status = net.minecraft.world.entity.ai.behavior.Status.STOPPED;
+    @Override
+    public final void doStop(@NonNull ServerLevel level, E entity, long gameTime) {
+        this.status = Behavior.Status.STOPPED;
     }
 
     @Override
-    public String debugString() {
+    public @NonNull String debugString() {
         return "ActionHandler";
     }
 }

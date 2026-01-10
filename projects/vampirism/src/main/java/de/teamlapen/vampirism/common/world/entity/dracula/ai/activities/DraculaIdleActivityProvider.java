@@ -2,6 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
@@ -17,13 +18,18 @@ import java.util.Set;
 public class DraculaIdleActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaIdleActivityProvider() {
-        createActivity(Activity.IDLE)
+        super(Activity.IDLE);
+    }
+
+    @Override
+    protected void createActivity(ActivityBuilder<Dracula> builder) {
+        builder
+                .startPriority(0)
                 .add(new RunOne<>(
                         ImmutableList.of(
                                 Pair.of(createIdleLookBehaviors(), 2),
                                 Pair.of(createIdleMovementBehaviors(0.2f), 1)
                         )), Set.of(SensorType.NEAREST_LIVING_ENTITIES), Set.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.WALK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES));
-
     }
 
     public static RunOne<Dracula> createIdleMovementBehaviors(float speed) {

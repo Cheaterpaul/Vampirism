@@ -36,8 +36,31 @@ public class SummonProtectorsBehavior {
 
     public static final int MAX_SUMMONS = 10;
 
+    public static class SummonProtectorsInformativeOneShot<E extends Dracula> extends OneShot<E> implements IInformativeBehavior<E> {
+        private final OneShot<E> delegate;
+
+        public SummonProtectorsInformativeOneShot(OneShot<E> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean trigger(ServerLevel level, E entity, long gameTime) {
+            return delegate.trigger(level, entity, gameTime);
+        }
+
+        @Override
+        public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
+            return Set.of();
+        }
+
+        @Override
+        public Set<MemoryModuleType<?>> getMemories() {
+            return SummonProtectorsBehavior.memories();
+        }
+    }
+
     public static OneShot<Dracula> create() {
-        return BehaviorBuilder.create(
+        return new SummonProtectorsInformativeOneShot<>(BehaviorBuilder.create(
                 inst -> inst.group(
                         inst.absent(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get()),
                         inst.present(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()),
@@ -68,7 +91,7 @@ public class SummonProtectorsBehavior {
                             return true;
                         })
 
-                ));
+                )));
     }
 
     public static Set<MemoryModuleType<?>> memories() {

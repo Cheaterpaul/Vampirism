@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.BlindingBatEntity;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.IInformativeBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAiSystem;
 import net.minecraft.server.level.ServerLevel;
@@ -11,6 +12,8 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 
 import java.util.Set;
 
@@ -22,8 +25,32 @@ public class SummonVampireBats {
                 ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get()
         );
     }
+
+    public static class SummonVampireBatsInformativeOneShot<E extends Dracula> extends OneShot<E> implements IInformativeBehavior<E> {
+        private final OneShot<E> delegate;
+
+        public SummonVampireBatsInformativeOneShot(OneShot<E> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean trigger(ServerLevel level, E entity, long gameTime) {
+            return delegate.trigger(level, entity, gameTime);
+        }
+
+        @Override
+        public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
+            return Set.of();
+        }
+
+        @Override
+        public Set<MemoryModuleType<?>> getMemories() {
+            return SummonVampireBats.memories();
+        }
+    }
+
     public static OneShot<Dracula> create() {
-        return BehaviorBuilder.create(
+        return new SummonVampireBatsInformativeOneShot<>(BehaviorBuilder.create(
                 inst -> inst.group(
                         inst.absent(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get()),
                         inst.present(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()),
@@ -35,7 +62,7 @@ public class SummonVampireBats {
                             DraculaAiSystem.setActionCooldown(cooldown, active, used, using, 20*20);
                             return true;
                         })
-        );
+        ));
     }
 
     public static Set<MemoryModuleType<?>> memories() {

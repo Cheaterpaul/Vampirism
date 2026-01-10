@@ -22,14 +22,14 @@ import java.util.function.Supplier;
 public class ActionBuilder<E extends LivingEntity> {
 
     private final ActivityBuilder<E> parent;
-    private Activity activity;
+    private final Activity activity;
     private final Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements = new HashSet<>();
     private final List<BehaviorControl<? super E>> behaviors = new ArrayList<>();
     private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     private final Set<MemoryModuleType<?>> actionMemories = new HashSet<>();
     private BiPredicate<ServerLevel, E> canActivate;
-    private int startPriority = 10;
+    private final int startPriority = 10;
 
     public ActionBuilder(ActivityBuilder<E> parent, Activity activity) {
         this.parent = parent;
@@ -38,10 +38,7 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> addAction(Activity activity) {
         ActionBuilder<E> builder = new ActionBuilder<>(this.parent, activity);
-        if (this.parent != null) {
-            builder.addRequirements(this.parent.getRequirements());
-            this.parent.getActionBuilders().add(builder);
-        }
+        this.parent.actionBuilder().add(builder);
         return builder;
     }
 
@@ -51,6 +48,7 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> requires(MemoryModuleType<?> memory, MemoryStatus status) {
         this.requirements.add(Pair.of(memory, status));
+        this.memories.add(memory);
         return this;
     }
 
@@ -58,37 +56,38 @@ public class ActionBuilder<E extends LivingEntity> {
         return requires(memory.get(), status);
     }
 
-    public ActionBuilder<E> addRequirements(Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements) {
-        if (requirements != null) {
-            this.requirements.addAll(requirements);
-        }
-        return this;
-    }
+    //<editor-fold desc="Behaviors">
 
     public ActionBuilder<E> add(BehaviorControl<? super E> control) {
-        this.behaviors.add(control);
-        if (control instanceof IInformativeBehavior informative) {
+        if (control instanceof IInformativeBehavior<?> informative) {
             //noinspection unchecked
-            this.sensors.addAll((Set<? extends SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors());
-            this.memories.addAll(informative.getMemories());
+            return this.add(control, (Set<? extends SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors(), informative.getMemories());
         }
-        return this;
+        return this.add(control, Set.of(), Set.of());
     }
 
-    public ActionBuilder<E> add(BehaviorControl<? super E> control, Set<SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
+    public ActionBuilder<E> add(BehaviorControl<? super E> control, Set<? extends SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
         this.behaviors.add(control);
         this.sensors.addAll(sensors);
         this.memories.addAll(memories);
         return this;
     }
 
+    //</editor-fold>
+
     public ActionBuilder<E> canActivate(BiPredicate<ServerLevel, E> canActivate) {
         this.canActivate = canActivate;
         return this;
     }
 
+    public BiPredicate<ServerLevel, E> getCanActivate() {
+        return canActivate;
+    }
+
     public ActionBuilder<E> actionMemory(MemoryModuleType<?> actionMemory) {
         this.actionMemories.add(actionMemory);
+        this.requirements.add(Pair.of(actionMemory, MemoryStatus.VALUE_PRESENT));
+        this.memories.add(actionMemory);
         return this;
     }
 
@@ -98,6 +97,7 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> cooldownMemory(MemoryModuleType<?> cooldownMemory) {
         this.requirements.add(Pair.of(cooldownMemory, MemoryStatus.VALUE_ABSENT));
+        this.memories.add(cooldownMemory);
         return this;
     }
 
@@ -123,10 +123,6 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public Set<MemoryModuleType<?>> getActionMemories() {
         return actionMemories;
-    }
-
-    public BiPredicate<ServerLevel, E> getCanActivate() {
-        return canActivate;
     }
 
     public void register(Brain<E> brain) {

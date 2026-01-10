@@ -257,8 +257,6 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     //<editor-fold desc="Brain">
 
-    private final DraculaAiSystem aiSystem = new DraculaAiSystem(this);
-
     @SuppressWarnings("unchecked")
     @Override
     public Brain<Dracula> getBrain() {
@@ -267,21 +265,19 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     @Override
     protected Brain<?> makeBrain(Dynamic<?> dynamic) {
-        Brain<Dracula> brain = this.brainProvider().makeBrain(dynamic);
-        this.aiSystem.initializeBrain(brain);
-        return brain;
+        return DraculaAiSystem.AI.initializeBrain(this.brainProvider().makeBrain(dynamic));
     }
 
     @Override
     protected Brain.Provider<Dracula> brainProvider() {
-        return Brain.provider(this.aiSystem.getMemoryModules(), this.aiSystem.getSensors());
+        return DraculaAiSystem.AI.brainProvider();
     }
 
     @Override
     protected void customServerAiStep(ServerLevel level) {
         if (!this.isTransforming()) {
             this.getBrain().tick(level, this);
-            this.aiSystem.update(level);
+            DraculaAiSystem.AI.tick(level, this);
         }
     }
 
@@ -333,7 +329,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         this.setState(nextStage);
         updateAttributes(getStage());
         if (level() instanceof ServerLevel serverLevel) {
-            this.aiSystem.stop(serverLevel);
+            DraculaAiSystem.AI.stop(serverLevel, this);
         }
         updateEvent();
     }

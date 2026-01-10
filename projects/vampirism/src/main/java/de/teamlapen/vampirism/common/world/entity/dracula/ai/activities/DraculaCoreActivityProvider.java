@@ -1,5 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
+import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
@@ -14,13 +15,19 @@ import java.util.Set;
 public class DraculaCoreActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaCoreActivityProvider() {
-        createActivity(Activity.CORE)
+        super(Activity.CORE);
+    }
+
+    @Override
+    protected void createActivity(ActivityBuilder<Dracula> builder) {
+        builder
+                .startPriority(0)
                 .add(new Swim<>(0.8f))
                 .add(new LookAtTargetSink(45, 90), Set.of(), Set.of(MemoryModuleType.LOOK_TARGET))
                 .add(new MoveToTargetSink(), Set.of(
-                                SensorType.NEAREST_LIVING_ENTITIES,
-                                SensorType.HURT_BY
-                        ), Set.of(
+                        SensorType.NEAREST_LIVING_ENTITIES,
+                        SensorType.HURT_BY
+                ), Set.of(
                         MemoryModuleType.LOOK_TARGET,
                         MemoryModuleType.WALK_TARGET,
                         MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,

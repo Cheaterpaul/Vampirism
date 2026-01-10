@@ -2,6 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.activities;
 
 import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.RegenerationBehavior;
@@ -17,7 +18,12 @@ import java.util.Optional;
 public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaPhase3ActivityProvider() {
-        var activity = createActivity(ModActivities.DRACULA_PHASE_3)
+        super(ModActivities.DRACULA_PHASE_3);
+    }
+
+    @Override
+    protected void createActivity(ActivityBuilder<Dracula> builder) {
+        builder
                 .add(StopAttackingIfTargetInvalid.create())
                 .add(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F))
                 .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget))
@@ -26,8 +32,9 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
                 .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.4f))
                 .requires(ModMemoryTypes.Dracula.PHASE_3, MemoryStatus.VALUE_PRESENT);
 
-        activity.useActions()
-                .addAction(ModActivities.DRACULA_REGENERATION)
+        var actions = builder.useActions();
+
+        actions.addAction(ModActivities.DRACULA_REGENERATION)
                 .actionMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN)
                 .add(new RegenerationBehavior())

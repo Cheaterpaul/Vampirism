@@ -12,6 +12,7 @@ import net.minecraft.util.Unit;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.schedule.Activity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -21,9 +22,7 @@ import java.util.stream.Stream;
 
 public class DraculaAiSystem extends AiSystem<Dracula> {
 
-    public DraculaAiSystem(Dracula entity) {
-        super(entity);
-    }
+    public static final DraculaAiSystem AI = new DraculaAiSystem();
 
     @Override
     protected List<AiActivityProvider<Dracula>> createActivityProviders() {
@@ -37,15 +36,15 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
     }
 
     @Override
-    public void update(ServerLevel level) {
-        this.updateMemories();
-        this.updateActivity(level);
+    public void tick(ServerLevel level, Dracula entity) {
+        this.updateMemories(entity);
+        this.updateActivity(level, entity);
     }
 
-    private void updateMemories() {
-        Brain<Dracula> brain = this.entity.getBrain();
+    private void updateMemories(Dracula entity) {
+        Brain<Dracula> brain = entity.getBrain();
         Set<MemoryModuleType<Unit>> stageMemories = Stream.of(ModMemoryTypes.Dracula.PHASE_1.get(), ModMemoryTypes.Dracula.PHASE_2.get(), ModMemoryTypes.Dracula.PHASE_3.get()).collect(Collectors.toSet());
-        MemoryModuleType<Unit> unitMemoryModuleType = memoryForStage(this.entity.getState());
+        MemoryModuleType<Unit> unitMemoryModuleType = memoryForStage(entity.getState());
 
         if (unitMemoryModuleType != null) {
             stageMemories.remove(unitMemoryModuleType);
@@ -54,22 +53,9 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
         stageMemories.forEach(brain::eraseMemory);
     }
 
-    private void updateActivity(ServerLevel level) {
-        Brain<Dracula> brain = this.entity.getBrain();
-        if (!brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()) && !brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get())) {
-            this.activityProviders.stream().flatMap(p -> Stream.concat(p.getActionBuilders().stream(), p.getBuilders().stream().flatMap(b -> b.getActionBuilders().stream())))
-                    .filter(builder -> builder.getRequirements().stream().allMatch(pair -> brain.checkMemory(pair.getFirst(), pair.getSecond())))
-                    .filter(builder -> builder.getCanActivate() != null && builder.getCanActivate().test(level, entity)).findFirst().ifPresent(builder -> {
-                brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
-                builder.getActionMemories().forEach(memory -> brain.setMemory((MemoryModuleType<net.minecraft.util.Unit>) memory, net.minecraft.util.Unit.INSTANCE));
-                if (builder.getActivity() != null) {
-                    brain.setActiveActivityIfPossible(builder.getActivity());
-                }
-            });
-        }
-        brain.setActiveActivityToFirstValid(
-                this.activityProviders.stream().flatMap(AiActivityProvider::getActiveActivities).toList()
-        );
+    private void updateActivity(ServerLevel level, Dracula entity) {
+        Brain<Dracula> brain = entity.getBrain();
+        brain.setActiveActivityToFirstValid(Stream.concat(this.activityProviders.stream().filter(x -> x.getActivity() != Activity.CORE && x.getActivity() != Activity.IDLE).flatMap(AiActivityProvider::allActivities), this.activityProviders.stream().map(AiActivityProvider::getActivity).filter(activity -> activity == Activity.IDLE)).toList());
     }
 
     @Nullable

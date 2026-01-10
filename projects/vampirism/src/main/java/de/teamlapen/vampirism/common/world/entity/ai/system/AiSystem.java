@@ -16,11 +16,9 @@ import java.util.Set;
  * Base class for object-oriented AI systems.
  */
 public abstract class AiSystem<E extends LivingEntity> {
-    protected final E entity;
     protected final List<AiActivityProvider<E>> activityProviders;
 
-    public AiSystem(E entity) {
-        this.entity = entity;
+    public AiSystem() {
         this.activityProviders = this.createActivityProviders();
     }
 
@@ -41,9 +39,15 @@ public abstract class AiSystem<E extends LivingEntity> {
                 .collect(ImmutableSet.toImmutableSet());
     }
 
-    public void initializeBrain(Brain<E> brain) {
+    public Brain<E> initializeBrain(Brain<E> brain) {
         activityProviders.forEach(p -> p.initActivity(brain));
         this.setupBrainPriorities(brain);
+
+        return brain;
+    }
+
+    public Brain.Provider<E> brainProvider() {
+        return Brain.provider(getMemoryModules(), getSensors());
     }
 
     /**
@@ -55,11 +59,11 @@ public abstract class AiSystem<E extends LivingEntity> {
         brain.useDefaultActivity();
     }
 
-    public abstract void update(ServerLevel level);
+    public abstract void tick(ServerLevel level, E entity);
 
-    public void stop(ServerLevel level) {
-        Brain<E> brain = (Brain<E>) this.entity.getBrain();
-        brain.stopAll(level, this.entity);
+    public void stop(ServerLevel level, E entity) {
+        Brain<E> brain = (Brain<E>) entity.getBrain();
+        brain.stopAll(level, entity);
         brain.clearMemories();
     }
 }
