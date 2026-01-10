@@ -26,24 +26,22 @@ public class DraculaPhase2ActivityProvider extends AiActivityProvider<Dracula> {
                 .requires(ModMemoryTypes.Dracula.PHASE_2, MemoryStatus.VALUE_PRESENT);
 
         var actionBuilder = builder.useActions();
-        actionBuilder.addAction(ModActivities.DRACULA_SUMMON_BATS)
-                .actionMemory(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE)
+        actionBuilder.addAction(ModActivities.DRACULA_SUMMON_BATS, action -> action
+                .activeMemory(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN)
                 .add(SummonVampireBats.create())
-                .canActivate((level, dracula) -> dracula.getHealth() < (dracula.getMaxHealth() * 0.7));
+                .canActivate((level, dracula) -> dracula.getHealth() < (dracula.getMaxHealth() * 0.7)));
 
-        actionBuilder.addAction(ModActivities.DRACULA_FLYING_SWORD)
-                .actionMemory(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE)
+        actionBuilder.addAction(ModActivities.DRACULA_FLYING_SWORD, action -> action
+                .activeMemory(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN)
                 .add(EquipSword.create())
                 .add(new FlyingSwordAttack())
-                .add(UnEquipSword.create())
-                .canActivate((level, dracula) -> true);
+                .add(UnEquipSword.create()));
 
-        actionBuilder.addAction(ModActivities.DRACULA_FLYING_NEEDLE)
-                .actionMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE)
+        actionBuilder.addAction(ModActivities.DRACULA_FLYING_NEEDLE, action -> action
+                .activeMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN)
-                .add(new FlyingNeedleAttack())
-                .canActivate((level, dracula) -> true);
+                .add(new FlyingNeedleAttack()));
     }
 }

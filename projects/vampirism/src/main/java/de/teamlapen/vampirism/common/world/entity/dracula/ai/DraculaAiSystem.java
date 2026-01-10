@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai;
 import com.mojang.datafixers.kinds.Const;
 import com.mojang.datafixers.kinds.IdF;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.util.StreamUtil;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiSystem;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
@@ -55,24 +56,17 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
 
     private void updateActivity(ServerLevel level, Dracula entity) {
         Brain<Dracula> brain = entity.getBrain();
-        brain.setActiveActivityToFirstValid(Stream.concat(this.activityProviders.stream().filter(x -> x.getActivity() != Activity.CORE && x.getActivity() != Activity.IDLE).flatMap(AiActivityProvider::allActivities), this.activityProviders.stream().map(AiActivityProvider::getActivity).filter(activity -> activity == Activity.IDLE)).toList());
+        brain.setActiveActivityToFirstValid(StreamUtil.append(this.activityProviders.stream().filter(AiActivityProvider::isNonCore).flatMap(AiActivityProvider::allActivities), Activity.IDLE).toList());
     }
 
     @Nullable
     private static MemoryModuleType<Unit> memoryForStage(DraculaState state) {
-        if (state == DraculaState.TRANSFORMING_TO_RANGED) {
-            return null;
-        } else if (state == DraculaState.RANGED) {
-            return ModMemoryTypes.Dracula.PHASE_2.get();
-        } else if (state == DraculaState.TRANSFORMING_TO_RAGED) {
-            return null;
-        } else if (state == DraculaState.RAGED) {
-            return ModMemoryTypes.Dracula.PHASE_3.get();
-        } else if (state == DraculaState.PASSIVE) {
-            return ModMemoryTypes.Dracula.PHASE_1.get();
-        } else {
-            return null;
-        }
+        return switch (state) {
+            case PASSIVE -> ModMemoryTypes.Dracula.PHASE_1.get();
+            case RANGED -> ModMemoryTypes.Dracula.PHASE_2.get();
+            case RAGED -> ModMemoryTypes.Dracula.PHASE_3.get();
+            default -> null;
+        };
     }
 
     public static void setActionCooldown(MemoryAccessor<Const.Mu<com.mojang.datafixers.util.Unit>, net.minecraft.util.Unit> cooldown, MemoryAccessor<IdF.Mu, net.minecraft.util.Unit> active, MemoryAccessor<Const.Mu<com.mojang.datafixers.util.Unit>, net.minecraft.util.Unit> actionCooldown, MemoryAccessor<IdF.Mu, net.minecraft.util.Unit> actionActive, int actionCooldownTicks) {

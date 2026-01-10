@@ -18,34 +18,41 @@ import java.util.stream.Stream;
 public abstract class AiActivityProvider<E extends LivingEntity> {
 
     private final Activity activity;
-    protected final ActivityBuilder<E> builder;
+    protected final ActivityBuilder.ActivityEntry<E> activityEntry;
 
     public AiActivityProvider(Activity activity) {
         this.activity = activity;
-        createActivity(this.builder = new ActivityBuilder<>(activity));
+        ActivityBuilder<E> builder = new ActivityBuilder<>(activity);
+        createActivity(builder);
+        this.activityEntry = builder.build();
     }
 
     public AiActivityProvider(Supplier<Activity> activitySupplier) {
         this(activitySupplier.get());
     }
 
+    public boolean isNonCore() {
+        return this.activity != Activity.CORE && this.activity != Activity.IDLE;
+    }
+
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-        return this.builder.getSensors();
+        return this.activityEntry.sensors();
     }
 
     public Set<MemoryModuleType<?>> getMemoryModules() {
-        return this.builder.getMemories();
+        return this.activityEntry.memories();
     }
 
     public void initActivity(Brain<E> brain) {
-        this.builder.register(brain);
+        this.activityEntry.register(brain);
     }
 
     public Activity getActivity() {
         return this.activity;
     }
+
     public Stream<Activity> allActivities() {
-        return this.builder.activities();
+        return this.activityEntry.activities();
     }
 
     protected abstract void createActivity(ActivityBuilder<E> builder);

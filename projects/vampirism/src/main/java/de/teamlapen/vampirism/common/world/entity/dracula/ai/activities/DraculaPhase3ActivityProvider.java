@@ -34,8 +34,8 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
         var actions = builder.useActions();
 
-        actions.addAction(ModActivities.DRACULA_REGENERATION)
-                .actionMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
+        actions.addAction(ModActivities.DRACULA_REGENERATION, action -> action
+                .activeMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
                 .cooldownMemory(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN)
                 .add(new RegenerationBehavior())
                 .canActivate((level, dracula) -> {
@@ -45,7 +45,7 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
                         return false;
                     }
                     return dracula.getRandom().nextFloat() < ((1 - v) / gate);
-                });
+                }));
     }
 
     private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel level, Dracula dracula) {

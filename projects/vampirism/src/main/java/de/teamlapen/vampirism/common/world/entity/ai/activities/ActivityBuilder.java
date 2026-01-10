@@ -3,7 +3,6 @@ package de.teamlapen.vampirism.common.world.entity.ai.activities;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.util.StreamUtil;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -18,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ActivityBuilder<E extends LivingEntity> {
@@ -27,9 +27,9 @@ public class ActivityBuilder<E extends LivingEntity> {
     private final List<BehaviorControl<? super E>> behaviors = new ArrayList<>();
     private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
+    private final ActionsBuilder<E> actionBuilders = new ActionsBuilder<>();
+
     private int startPriority = 10;
-    private final List<ActionBuilder<E>> actionBuilders = new ArrayList<>();
-    private BehaviorControl<? super E> actionHandler;
 
     public ActivityBuilder(Activity activity) {
         this.activity = activity;
@@ -60,11 +60,10 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     //<editor-fold desc="Actions">
 
-    public ActionBuilder<E> useActions() {
-        this.actionHandler = new ActionHandler<>(this.actionBuilders);
+    public ActionsBuilder<E> useActions() {
         this.memories.add(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
         this.memories.add(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get());
-        return new ActionBuilder<>(this, null);
+        return this.actionBuilders;
     }
 
     //</editor-fold>
@@ -86,65 +85,13 @@ public class ActivityBuilder<E extends LivingEntity> {
         return this;
     }
 
-    public ActivityBuilder<E> add(BehaviorBuilder<E> builder) {
-        this.behaviors.addAll(builder.getBehaviors());
-        return this;
-    }
-
-    //</editor-fold>
-
-    //<editor-fold desc="Getters">
-
-    public Activity getActivity() {
-        return activity;
-    }
-
-    public Stream<Activity> activities() {
-        return StreamUtil.append(this.actionBuilders.stream().map(ActionBuilder::getActivity), this.activity);
-    }
-
-    public Set<MemoryModuleType<?>> getMemories() {
-        Set<MemoryModuleType<?>> allMemories = new HashSet<>(memories);
-        for (ActionBuilder<E> actionBuilder : actionBuilders) {
-            allMemories.addAll(actionBuilder.getMemories());
-        }
-        return allMemories;
-    }
-
-    public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-        Set<SensorType<? extends Sensor<? super E>>> allSensors = new HashSet<>(sensors);
-        for (ActionBuilder<E> actionBuilder : actionBuilders) {
-            allSensors.addAll(actionBuilder.getSensors());
-        }
-        return allSensors;
-    }
-
-    public List<ActionBuilder<E>> actionBuilder() {
-        return actionBuilders;
-    }
-
-    public BehaviorControl<? super E> actionHandler() {
-        return actionHandler;
-    }
-
-    //</editor-fold>
-
-    //<editor-fold desc="Register">
-
-    public void register(Brain<E> brain) {
-        brain.addActivityWithConditions(this.activity, buildBehaviors(), this.requirements);
-        for (ActionBuilder<E> actionBuilder : actionBuilders) {
-            actionBuilder.register(brain);
-        }
-    }
-
     private ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> buildBehaviors() {
         ImmutableList.Builder<Pair<Integer, ? extends BehaviorControl<? super E>>> builder = ImmutableList.builder();
 
         int priority = this.startPriority;
 
-        if (this.actionHandler != null) {
-            builder.add(Pair.of(priority++, this.actionHandler));
+        if (!this.actionBuilders.actions().isEmpty()) {
+            builder.add(Pair.of(priority++, new ActionBehavior<>(this.actionBuilders.actions())));
         }
 
         for (BehaviorControl<? super E> behavior : behaviors) {
@@ -156,4 +103,33 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     //</editor-fold>
 
+    public ActivityEntry<E> build() {
+        return new ActivityEntry<>(this.activity,
+                Stream.concat(this.actionBuilders.actions().stream().flatMap(x -> x.sensors().stream()), this.sensors.stream()).collect(Collectors.toSet()),
+                Stream.concat(this.actionBuilders.actions().stream().flatMap(a -> a.memories().stream()), this.memories.stream()).collect(Collectors.toSet()),
+                this.requirements,
+                buildBehaviors(),
+                this.actionBuilders.actions()
+        );
+    }
+
+    public record ActivityEntry<E extends LivingEntity>(
+            Activity activity,
+            Set<SensorType<? extends Sensor<? super E>>> sensors,
+            Set<MemoryModuleType<?>> memories,
+            Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements,
+            ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviors,
+            List<ActionBuilder.Action<E>> actions
+    ) {
+        public void register(Brain<E> brain) {
+            brain.addActivityWithConditions(this.activity, this.behaviors, this.requirements);
+            for (ActionBuilder.Action<E> actionBuilder : this.actions) {
+                actionBuilder.register(brain, this.requirements);
+            }
+        }
+
+        public Stream<Activity> activities() {
+            return Stream.concat(this.actions.stream().map(ActionBuilder.Action::activity), Stream.of(this.activity));
+        }
+    }
 }

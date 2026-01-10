@@ -28,19 +28,19 @@ public abstract class AiSystem<E extends LivingEntity> {
     protected abstract List<AiActivityProvider<E>> createActivityProviders();
 
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
-        return activityProviders.stream()
+        return this.activityProviders.stream()
                 .flatMap(p -> p.getSensors().stream())
                 .collect(ImmutableSet.toImmutableSet());
     }
 
     public Set<MemoryModuleType<?>> getMemoryModules() {
-        return activityProviders.stream()
+        return this.activityProviders.stream()
                 .flatMap(p -> p.getMemoryModules().stream())
                 .collect(ImmutableSet.toImmutableSet());
     }
 
     public Brain<E> initializeBrain(Brain<E> brain) {
-        activityProviders.forEach(p -> p.initActivity(brain));
+        this.activityProviders.forEach(p -> p.initActivity(brain));
         this.setupBrainPriorities(brain);
 
         return brain;
