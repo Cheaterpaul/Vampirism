@@ -76,12 +76,14 @@ public class DraculaAi {
     public static void updateActivity(Dracula dracula, ServerLevel level) {
         Brain<Dracula> brain = dracula.getBrain();
         brain.setActiveActivityToFirstValid(
-                Stream.of(
-                        Phase3Activities.getActivities(),
-                        Phase2Activities.getActivities(),
-                        Phase1Activities.getActivities(),
-                        IdleActivity.getActivities()
-                ).flatMap(x -> x).toList()
+                Stream.of(switch (dracula.getStage()) {
+                    case PHASE_1 -> Phase1Activities.getActivities();
+                    case PHASE_2 -> Phase2Activities.getActivities();
+                    case PHASE_3 -> Phase3Activities.getActivities();
+                    default -> Stream.<Activity>of();
+                }, IdleActivity.getActivities())
+                        .flatMap(x -> x)
+                        .toList()
         );
     }
 

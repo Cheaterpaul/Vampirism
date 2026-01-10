@@ -14,6 +14,7 @@ import de.teamlapen.vampirism.common.world.entity.converted.*;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.DefaultConverter;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.SpecialConverter;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
+import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import de.teamlapen.vampirism.common.world.entity.hunter.*;
 import de.teamlapen.vampirism.common.world.entity.minion.HunterMinionEntity;
@@ -103,6 +104,7 @@ public class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<ChestBoat>> DARK_SPRUCE_CHEST_BOAT = registerEntityType("dark_spruce_chest_boat", EntityType.chestBoatFactory(ModItems.DARK_SPRUCE_CHEST_BOAT::get), MobCategory.MISC, x -> x.sized(1.375f,0.5625f).eyeHeight(0.5625f).clientTrackingRange(10).noLootTable().noSummon());
     public static final DeferredHolder<EntityType<?>, EntityType<ChestBoat>> CURSED_SPRUCE_CHEST_BOAT = registerEntityType("cursed_spruce_chest_boat", EntityType.chestBoatFactory(ModItems.CURSED_SPRUCE_CHEST_BOAT::get), MobCategory.MISC, x -> x.sized(1.375f,0.5625f).eyeHeight(0.5625f).clientTrackingRange(10).noLootTable().noSummon());
     public static final DeferredHolder<EntityType<?>, EntityType<Dracula>> DRACULA = registerEntityType("dracula", Dracula::new, VEnums.VAMPIRE_CATEGORY.getValue(), x -> x.sized(0.6f, 2.8f).clientTrackingRange(10));
+    public static final DeferredHolder<EntityType<?>, EntityType<FlyingSwordEntity>> FLYING_SWORD = registerEntityType("flying_sword", FlyingSwordEntity::new, MobCategory.MISC, x -> x.sized(0.5F, 0.5F).fireImmune().noSummon());
 
 
     public static final DeferredHolder<MapCodec<? extends Converter>, MapCodec<? extends Converter>> DEFAULT_CONVERTER = CONVERTING_HELPER.register("default", () -> DefaultConverter.CODEC);

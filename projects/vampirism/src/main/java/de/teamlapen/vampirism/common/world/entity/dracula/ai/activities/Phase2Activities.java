@@ -9,6 +9,7 @@ import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.SummonVampireBats;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.EquipSword;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.FlyingSwordAttack;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword.UnEquipSword;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -38,6 +39,7 @@ public class Phase2Activities extends IdleActivity {
     public static Set<? extends MemoryModuleType<?>> MEMORY_MODULES = Stream.of(
             IdleActivity.MEMORY_MODULES.stream(),
             SummonVampireBats.requires(),
+            FlyingSwordAttack.requires(),
             Stream.of(
                     ModMemoryTypes.Dracula.PHASE_2.get()
             )
@@ -55,13 +57,15 @@ public class Phase2Activities extends IdleActivity {
 
     public static void initActions(Brain<Dracula> brain) {
         ActivityBuilder.<Dracula>create(ModActivities.DRACULA_FLYING_SWORD)
-                .add(UnEquipSword.create())
                 .add(EquipSword.create())
+                .add(new FlyingSwordAttack())
+                .add(UnEquipSword.create())
                 .register(brain);
     }
 
     public static Stream<Activity> getActivities() {
         return Stream.of(
+                ModActivities.DRACULA_FLYING_SWORD.get(),
                 ModActivities.DRACULA_PHASE_2.get()
         );
     }

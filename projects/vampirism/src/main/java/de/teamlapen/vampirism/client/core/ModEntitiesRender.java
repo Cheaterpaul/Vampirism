@@ -5,6 +5,7 @@ import de.teamlapen.vampirism.client.models.armor.*;
 import de.teamlapen.vampirism.client.models.blocks.CoffinModel;
 import de.teamlapen.vampirism.client.models.entities.*;
 import de.teamlapen.vampirism.client.renderer.entities.*;
+import de.teamlapen.vampirism.client.renderer.entities.FlyingSwordRenderer;
 import de.teamlapen.vampirism.client.renderer.entities.layers.ConvertedVampireEntityLayer;
 import de.teamlapen.vampirism.client.renderer.entities.layers.VampirePlayerHeadLayer;
 import de.teamlapen.vampirism.common.core.ModEntities;
@@ -98,6 +99,7 @@ public class ModEntitiesRender {
         event.registerEntityRenderer(ModEntities.CURSED_SPRUCE_BOAT.get(), context -> new BoatRenderer(context, CURSED_SPRUCE_BOAT));
         event.registerEntityRenderer(ModEntities.CURSED_SPRUCE_CHEST_BOAT.get(), context -> new BoatRenderer(context, CURSED_SPRUCE_CHEST_BOAT));
         event.registerEntityRenderer(ModEntities.DRACULA.get(), DraculaRenderer::new);
+        event.registerEntityRenderer(ModEntities.FLYING_SWORD.get(), FlyingSwordRenderer::new);
     }
 
     public static void onRegisterLayers(EntityRenderersEvent.@NotNull RegisterLayerDefinitions event) {
