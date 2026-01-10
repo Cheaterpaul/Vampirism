@@ -46,6 +46,8 @@ public class ActionBuilder<E extends LivingEntity> {
         return addAction(activity.get());
     }
 
+    //<editor-fold desc="Requirements">
+
     public ActionBuilder<E> requires(MemoryModuleType<?> memory, MemoryStatus status) {
         this.requirements.add(Pair.of(memory, status));
         this.memories.add(memory);
@@ -55,6 +57,8 @@ public class ActionBuilder<E extends LivingEntity> {
     public <T> ActionBuilder<E> requires(Supplier<MemoryModuleType<T>> memory, MemoryStatus status) {
         return requires(memory.get(), status);
     }
+
+    //</editor-fold>
 
     //<editor-fold desc="Behaviors">
 
