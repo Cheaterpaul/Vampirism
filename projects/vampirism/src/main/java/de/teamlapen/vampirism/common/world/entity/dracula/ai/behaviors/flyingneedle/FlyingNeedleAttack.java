@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
-import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -60,7 +59,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
 
 
     @Override
-    protected void start(@NonNull ServerLevel level, Dracula entity, long gameTime) {
+    protected void start(ServerLevel level, Dracula entity, long gameTime) {
         this.phase = Phase.CHARGING;
         this.ticks = 0;
         this.needles.clear();
@@ -69,7 +68,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
     }
 
     @Override
-    protected void tick(@NonNull ServerLevel level, Dracula entity, long gameTime) {
+    protected void tick(ServerLevel level, Dracula entity, long gameTime) {
         this.ticks++;
         entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 
@@ -117,7 +116,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
                 BehaviorUtils.lookAtEntity(entity, target);
                 needle.shoot(target);
-                entity.triggerAnimation(IDraculaAnimations.Animation.NEEDLE_1, IDraculaAnimations.Animation.NEEDLE_2);
+                entity.triggerAnim(IDraculaAnimations.Animation.NEEDLE_1, IDraculaAnimations.Animation.NEEDLE_2);
                 ticks = 0; // Reset ticks to wait 5 for next firing
             }
         }
@@ -128,12 +127,12 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
     }
 
     @Override
-    protected boolean canStillUse(@NonNull ServerLevel level, Dracula entity, long gameTime) {
+    protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
         return entity.getBrain().hasMemoryValue(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
     }
 
     @Override
-    protected void stop(@NonNull ServerLevel level, Dracula entity, long gameTime) {
+    protected void stop(ServerLevel level, Dracula entity, long gameTime) {
         Brain<Dracula> brain = entity.getBrain();
         var uuids = brain.getMemory(ModMemoryTypes.Dracula.FLYING_NEEDLES.get()).stream().flatMap(Collection::stream).map(level::getEntity).toList();
         for (Entity uuid : uuids) {

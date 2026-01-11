@@ -118,7 +118,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                     float damage = 5.0f + (targets.size() * 0.5f);
                     FlyingSwordEntity sword = new FlyingSwordEntity(level, entity, target, damage);
                     level.addFreshEntity(sword);
-                    entity.triggerAnimation(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2);
+                    entity.triggerAnim(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2);
                     attacksDone++;
                 } else {
                     doStop(entity);

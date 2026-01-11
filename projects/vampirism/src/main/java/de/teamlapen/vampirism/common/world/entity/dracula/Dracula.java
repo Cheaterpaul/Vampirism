@@ -21,7 +21,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
-import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animatable.manager.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
@@ -29,7 +29,7 @@ import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAnimations {
+public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations {
 
     public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
 
@@ -37,6 +37,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
 
     public Dracula(EntityType<? extends Dracula> type, Level level) {
         super(type, level);
+        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
     @Override
@@ -234,7 +235,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
         );
     }
 
-    public void triggerAnimation(Animation... animations) {
+    public void triggerAnim(Animation... animations) {
         if (animations.length == 0) {
             return;
         }
@@ -243,7 +244,7 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
             return;
         }
 
-        geoCache.getManagerForId(getId()).tryTriggerAnimation(animation.id());
+        triggerAnim(this, getId(), "TriggerAttack", animation.id());
     }
 
     @Override
