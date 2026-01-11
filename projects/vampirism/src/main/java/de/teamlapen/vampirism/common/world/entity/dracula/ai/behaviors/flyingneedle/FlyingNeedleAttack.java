@@ -89,6 +89,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 double y = entity.getY() + 1.5 + Math.sin(gameTime * 0.05 + i) * 0.5;
 
                 needle.setPos(x, y, z);
+                needle.setYRot((float) (angle * (180 / Math.PI)) + 90);
             }
 
             if (needles.size() == 6 && ticks >= 80) { // Give some time for charging

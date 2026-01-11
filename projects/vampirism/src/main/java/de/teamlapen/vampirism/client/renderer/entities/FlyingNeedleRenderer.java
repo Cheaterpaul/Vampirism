@@ -44,18 +44,53 @@ public class FlyingNeedleRenderer extends EntityRenderer<FlyingNeedleEntity, Fly
             float size = 0.3f;
             Matrix4f matrix4f = pose.pose();
             int light = 15728880;
-            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, 0, 1);
-            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, 1, 1);
-            vertex0(vertexBuilder, matrix4f, pose, light, size, size, 1, 0);
-            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, 0, 0);
+            float thickness = 0.0625f; // 1/16th for a "thickness of 1" in pixel terms
+
+            // Front
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, thickness / 2f, 0, 1, 0, 0, 1);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, thickness / 2f, 1, 1, 0, 0, 1);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, thickness / 2f, 1, 0, 0, 0, 1);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, thickness / 2f, 0, 0, 0, 0, 1);
+
+            // Back
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, -thickness / 2f, 1, 0, 0, 0, -1);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, -thickness / 2f, 0, 0, 0, 0, -1);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, -thickness / 2f, 0, 1, 0, 0, -1);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, -thickness / 2f, 1, 1, 0, 0, -1);
+
+            // Sides (simplified "thickness" as requested)
+            // Top
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, -thickness / 2f, 0, 0, 0, 1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, thickness / 2f, 0, 0, 0, 1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, thickness / 2f, 1, 0, 0, 1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, -thickness / 2f, 1, 0, 0, 1, 0);
+
+            // Bottom
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, thickness / 2f, 0, 1, 0, -1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, -thickness / 2f, 0, 1, 0, -1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, -thickness / 2f, 1, 1, 0, -1, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, thickness / 2f, 1, 1, 0, -1, 0);
+
+            // Left
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, thickness / 2f, 0, 0, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, -thickness / 2f, 0, 0, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, -thickness / 2f, 0, 1, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, thickness / 2f, 0, 1, -1, 0, 0);
+
+            // Right
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, -thickness / 2f, 1, 0, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, size, thickness / 2f, 1, 0, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, thickness / 2f, 1, 1, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, -thickness / 2f, 1, 1, 1, 0, 0);
+
         });
 
         poseStack.popPose();
         super.submit(state, poseStack, nodeCollector, cameraRenderState);
     }
 
-    private static void vertex0(VertexConsumer pConsumer, Matrix4f pMatrix, PoseStack.Pose pPose, int pLight, float pX, float pY, int pU, int pV) {
-        pConsumer.addVertex(pMatrix, pX, pY, 0.0f).setColor(255, 255, 255, 255).setUv((float)pU, (float)pV).setOverlay(OverlayTexture.NO_OVERLAY).setLight(pLight).setNormal(pPose, 0.0F, 0.0F, 1.0F);
+    private static void vertex0(VertexConsumer pConsumer, Matrix4f pMatrix, PoseStack.Pose pPose, int pLight, float pX, float pY, float pZ, float pU, float pV, float nX, float nY, float nZ) {
+        pConsumer.addVertex(pMatrix, pX, pY, pZ).setColor(255, 255, 255, 255).setUv(pU, pV).setOverlay(OverlayTexture.NO_OVERLAY).setLight(pLight).setNormal(pPose, nX, nY, nZ);
     }
 
     public static class FlyingNeedleRenderState extends EntityRenderState {
