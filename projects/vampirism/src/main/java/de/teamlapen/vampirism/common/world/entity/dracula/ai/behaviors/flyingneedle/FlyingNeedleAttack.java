@@ -110,7 +110,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 }
             }
         } else if (phase == Phase.FIRING) {
-            if (ticks % 5 == 0) {
+            if (ticks % 10 == 0) {
                 needles.removeIf(n -> !n.isAlive() || n.isFlying());
                 if (needles.isEmpty()) {
                     doStop(entity);
@@ -123,7 +123,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                     return;
                 }
 
-                FlyingNeedleEntity needle = needles.get(0);
+                FlyingNeedleEntity needle = needles.getFirst();
                 LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
                 BehaviorUtils.lookAtEntity(entity, target);
                 needle.shoot(target);

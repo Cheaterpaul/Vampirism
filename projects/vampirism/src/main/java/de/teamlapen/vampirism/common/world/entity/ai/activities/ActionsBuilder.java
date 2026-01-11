@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 public class ActionsBuilder<E extends LivingEntity> {
 
     private final List<ActionBuilder.Action<E>> actions = new ArrayList<>();
-    private Supplier<Integer> cooldownSupplier = () -> 100;
+    private Supplier<Integer> cooldownSupplier = () -> 20;
 
     ActionsBuilder() {
     }

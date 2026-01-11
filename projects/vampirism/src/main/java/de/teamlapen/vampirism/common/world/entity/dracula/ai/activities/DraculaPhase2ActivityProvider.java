@@ -34,7 +34,7 @@ public class DraculaPhase2ActivityProvider extends AiActivityProvider<Dracula> {
 
         actionBuilder.addAction(ModActivities.DRACULA_FLYING_SWORD, action -> action
                 .activeMemory(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE)
-                .cooldown(ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN, () -> 20 * 20)
+                .cooldown(ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN, () -> 5 * 20)
                 .add(EquipSword.create(), EquipSword.sensors(), EquipSword.memories())
                 .add(FlyingSwordAttack.create(), FlyingSwordAttack.sensors(), FlyingSwordAttack.memories())
                 .addLast(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories()));
