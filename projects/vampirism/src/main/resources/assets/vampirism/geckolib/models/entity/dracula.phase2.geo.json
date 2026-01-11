@@ -12,12 +12,12 @@
 			},
 			"bones": [
 				{
-					"name": "Head",
+					"name": "head",
 					"pivot": [0, 39, 0]
 				},
 				{
-					"name": "HeadP2",
-					"parent": "Head",
+					"name": "head_inner",
+					"parent": "head",
 					"pivot": [0, 39, 0],
 					"cubes": [
 						{
@@ -38,18 +38,18 @@
 					]
 				},
 				{
-					"name": "Body",
+					"name": "body",
 					"pivot": [0, 35.4, 0],
 					"rotation": [-1.5, 0, 0]
 				},
 				{
-					"name": "Neck",
-					"parent": "Body",
+					"name": "neck",
+					"parent": "body",
 					"pivot": [-0.6, 36.60658, -0.6974]
 				},
 				{
-					"name": "NeckP1P2",
-					"parent": "Neck",
+					"name": "neck_inner",
+					"parent": "neck",
 					"pivot": [-0.6, 35.40658, 0.5026],
 					"cubes": [
 						{
@@ -70,8 +70,8 @@
 					]
 				},
 				{
-					"name": "CloakCollarP1P2",
-					"parent": "Body",
+					"name": "cloak_collar",
+					"parent": "body",
 					"pivot": [0, 35.40658, 0.5026],
 					"rotation": [-6, 0, 0],
 					"cubes": [
@@ -123,8 +123,8 @@
 					]
 				},
 				{
-					"name": "ShirtP1P2",
-					"parent": "Body",
+					"name": "shirt",
+					"parent": "body",
 					"pivot": [0, 35.40658, 0.5026],
 					"rotation": [-1, 0, 0],
 					"cubes": [
@@ -175,8 +175,8 @@
 					]
 				},
 				{
-					"name": "BowTie",
-					"parent": "ShirtP1P2",
+					"name": "bow_tie",
+					"parent": "shirt",
 					"pivot": [-0.6, 34.37568, -2.83818],
 					"cubes": [
 						{
@@ -224,8 +224,8 @@
 					]
 				},
 				{
-					"name": "BCloakP2",
-					"parent": "Body",
+					"name": "cloak",
+					"parent": "body",
 					"pivot": [0, 35.40658, 0.5026],
 					"cubes": [
 						{
@@ -276,12 +276,12 @@
 					]
 				},
 				{
-					"name": "Left_Leg",
+					"name": "left_leg",
 					"pivot": [0, 23.4, 0]
 				},
 				{
-					"name": "LLegP2P3",
-					"parent": "Left_Leg",
+					"name": "left_leg_inner",
+					"parent": "left_leg",
 					"pivot": [0, 23.4, 0],
 					"cubes": [
 						{
@@ -301,12 +301,12 @@
 					]
 				},
 				{
-					"name": "Right_Leg",
+					"name": "right_leg",
 					"pivot": [0, 23.4, 0]
 				},
 				{
-					"name": "RLegP2P3",
-					"parent": "Right_Leg",
+					"name": "right_leg_inner",
+					"parent": "right_leg",
 					"pivot": [-0.6, 23.4, 0],
 					"cubes": [
 						{
@@ -326,13 +326,13 @@
 					]
 				},
 				{
-					"name": "Left_Arm",
+					"name": "left_arm",
 					"pivot": [3, 35.4, 0],
 					"rotation": [0, 0, -2.5]
 				},
 				{
-					"name": "LArmP2",
-					"parent": "Left_Arm",
+					"name": "left_arm_inner",
+					"parent": "left_arm",
 					"pivot": [3, 35.4, 0],
 					"cubes": [
 						{
@@ -363,13 +363,13 @@
 					]
 				},
 				{
-					"name": "Right_Arm",
+					"name": "right_arm",
 					"pivot": [-4.2, 35.4, 0],
 					"rotation": [0, 0, 2.5]
 				},
 				{
-					"name": "RArmP2",
-					"parent": "Right_Arm",
+					"name": "right_arm_inner",
+					"parent": "right_arm",
 					"pivot": [-3.6, 35.4, 0],
 					"cubes": [
 						{

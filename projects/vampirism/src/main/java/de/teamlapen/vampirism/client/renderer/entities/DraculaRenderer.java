@@ -29,7 +29,7 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
 
     public DraculaRenderer(EntityRendererProvider.Context context) {
         super(context, new DraculaPhase1Model());
-        withRenderLayer(new FormRenderLayer(FightStage.PHASE_2, new ItemInHandGeoLayer<>(this, "Right_Arm", "Left_Arm")));
+        withRenderLayer(new FormRenderLayer(FightStage.PHASE_2, new ItemInHandGeoLayer<>(this, "right_arm_inner", "left_arm_inner")));
     }
 
 
