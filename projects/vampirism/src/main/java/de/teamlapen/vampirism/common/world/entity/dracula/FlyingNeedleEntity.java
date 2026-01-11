@@ -16,9 +16,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
+import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animatable.manager.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class FlyingNeedleEntity extends Projectile {
+public class FlyingNeedleEntity extends Projectile implements GeoAnimatable {
 
     private static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.defineId(FlyingNeedleEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -36,19 +39,6 @@ public class FlyingNeedleEntity extends Projectile {
         this.setOwner(owner);
         this.damage = damage;
         this.setPos(owner.getX(), owner.getEyeY(), owner.getZ());
-    }
-
-    @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(FLYING, false);
-    }
-
-    public void setFlying(boolean flying) {
-        this.entityData.set(FLYING, flying);
-    }
-
-    public boolean isFlying() {
-        return this.entityData.get(FLYING);
     }
 
     @Override
@@ -112,19 +102,56 @@ public class FlyingNeedleEntity extends Projectile {
         return super.canHitEntity(pTarget) && pTarget != this.getOwner() && this.isFlying();
     }
 
+    //<editor-fold desc="Data">
+
     @Override
-    protected void readAdditionalSaveData(@NotNull ValueInput input) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(FLYING, false);
+    }
+
+    public void setFlying(boolean flying) {
+        this.entityData.set(FLYING, flying);
+    }
+
+    public boolean isFlying() {
+        return this.entityData.get(FLYING);
+    }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Serialization">
+
+    @Override
+    protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        this.lifeTicks = input.getIntOr("LifeTicks", 0);
-        this.damage = input.getFloatOr("Damage", 4.0f);
-        this.setFlying(input.getBooleanOr("Flying", false));
+        this.lifeTicks = input.getIntOr("life_ticks", 0);
+        this.damage = input.getFloatOr("damage", 4.0f);
+        this.setFlying(input.getBooleanOr("flying", false));
     }
 
     @Override
-    protected void addAdditionalSaveData(@NotNull ValueOutput output) {
+    protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
-        output.putInt("LifeTicks", this.lifeTicks);
-        output.putFloat("Damage", this.damage);
-        output.putBoolean("Flying", this.isFlying());
+        output.putInt("life_ticks", this.lifeTicks);
+        output.putFloat("damage", this.damage);
+        output.putBoolean("flying", this.isFlying());
     }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Animation">
+
+    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.geoCache;
+    }
+
+    //</editor-fold>
 }

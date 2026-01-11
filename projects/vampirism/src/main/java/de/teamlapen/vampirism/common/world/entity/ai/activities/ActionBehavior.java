@@ -1,6 +1,5 @@
 package de.teamlapen.vampirism.common.world.entity.ai.activities;
 
-import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
@@ -42,7 +41,6 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
 
         var actions = new ArrayList<>(this.actions);
         Collections.shuffle(actions);
-        actions.removeIf(x -> x.activity() != ModActivities.DRACULA_FLYING_NEEDLE.get());
 
         for (ActionBuilder.Action<E> action : actions) {
             if (brain.hasMemoryValue(action.cooldownMemory().memory())) {
