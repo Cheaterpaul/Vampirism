@@ -33,7 +33,9 @@ public class FlyingSwordEntity extends Projectile {
 
         Vec3 direction = target.getEyePosition().subtract(this.position()).normalize();
         this.setDeltaMovement(direction.scale(1.5));
-        this.setRot((float) (Math.atan2(direction.x, direction.z) * (180 / Math.PI)), (float) (Math.asin(direction.y) * (180 / Math.PI)));
+        this.setRot((float) (Math.atan2(-direction.x, direction.z) * (180 / Math.PI)), (float) (-Math.asin(direction.y) * (180 / Math.PI)));
+        this.yRotO = this.getYRot();
+        this.xRotO = this.getXRot();
     }
 
     @Override
@@ -61,7 +63,7 @@ public class FlyingSwordEntity extends Projectile {
 
         // Keep the rotation towards movement
         if (movement.lengthSqr() > 1.0E-7D) {
-            this.setRot((float) (Math.atan2(movement.x, movement.z) * (180 / Math.PI)), (float) (Math.asin(movement.y / movement.length()) * (180 / Math.PI)));
+            this.setRot((float) (Math.atan2(-movement.x, movement.z) * (180 / Math.PI)), (float) (-Math.asin(movement.y / movement.length()) * (180 / Math.PI)));
         }
     }
 

@@ -44,6 +44,7 @@ public class ModMemoryTypes {
 
         public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_NEEDLE_ACTIVE = unit("action.active.flying_needle");
         public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_NEEDLE_COOLDOWN = unit("action.cooldown.flying_needle");
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<List<UUID>>> FLYING_NEEDLES = MEMORY_MODULES.register("action.flying_needle.needles", () -> new MemoryModuleType<>(Optional.of(UUIDUtil.CODEC.listOf())));
 
         private static void init() { }
     }
