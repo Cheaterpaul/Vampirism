@@ -3,6 +3,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingne
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
+import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -116,6 +117,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
                 BehaviorUtils.lookAtEntity(entity, target);
                 needle.shoot(target);
+                entity.triggerAnimation(IDraculaAnimations.Animation.NEEDLE_1, IDraculaAnimations.Animation.NEEDLE_2);
                 ticks = 0; // Reset ticks to wait 5 for next firing
             }
         }

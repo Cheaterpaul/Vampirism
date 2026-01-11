@@ -226,6 +226,24 @@ public class Dracula extends PathfinderMob implements GeoAnimatable, IDraculaAni
             }
             return PlayState.STOP;
         }));
+        controllers.add(new AnimationController<>("TriggerAttack", test -> PlayState.STOP)
+                .triggerableAnim(Animation.NEEDLE_1.id(), Animation.NEEDLE_1.animation)
+                .triggerableAnim(Animation.NEEDLE_2.id(), Animation.NEEDLE_2.animation)
+                .triggerableAnim(Animation.SWORD_1.id(), Animation.SWORD_1.animation)
+                .triggerableAnim(Animation.SWORD_2.id(), Animation.SWORD_2.animation)
+        );
+    }
+
+    public void triggerAnimation(Animation... animations) {
+        if (animations.length == 0) {
+            return;
+        }
+        Animation animation = animations[this.random.nextInt(animations.length)];
+        if (getStage() != animation.stage) {
+            return;
+        }
+
+        geoCache.getManagerForId(getId()).tryTriggerAnimation(animation.id());
     }
 
     @Override
