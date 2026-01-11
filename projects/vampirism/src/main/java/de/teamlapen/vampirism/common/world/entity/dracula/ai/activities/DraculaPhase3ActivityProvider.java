@@ -6,6 +6,8 @@ import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.BloodProjectilesBehavior;
+import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.MistFormBehavior;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.RegenerationBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
@@ -28,6 +30,7 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
     protected void createActivity(ActivityBuilder<Dracula> builder) {
         builder
                 .add(StopAttackingIfTargetInvalid.create(), Set.of(), Set.of(MemoryModuleType.ATTACK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
+                .add(MistFormBehavior.create(0.6f), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.ATTACK_TARGET))
                 .add(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
                 .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget), Set.of(ModSensors.NEAREST_ENTITY.get()), Set.of(MemoryModuleType.ATTACK_TARGET,MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryModuleType.ANGRY_AT))
                 .add(MeleeAttack.create(15), Set.of(SensorType.NEAREST_LIVING_ENTITIES), Set.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
@@ -48,6 +51,15 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
                         return false;
                     }
                     return dracula.getRandom().nextFloat() < ((1 - v) / gate);
+                }));
+
+        actions.addAction(ModActivities.DRACULA_BLOOD_PROJECTILES, action -> action
+                .activeMemory(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE)
+                .cooldown(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN, () -> 30 * 20)
+                .addLast(BloodProjectilesBehavior.create(), Set.of(), Set.of(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get(), ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN.get()))
+                .canActivate((level, dracula) -> {
+                    float healthPercent = dracula.getHealth() / dracula.getMaxHealth();
+                    return healthPercent >= 0.4f && healthPercent <= 0.8f;
                 }));
     }
 

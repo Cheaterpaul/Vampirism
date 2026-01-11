@@ -61,7 +61,7 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
         return switch (state) {
             case PASSIVE -> ModMemoryTypes.Dracula.PHASE_1.get();
             case RANGED -> ModMemoryTypes.Dracula.PHASE_2.get();
-            case RAGED -> ModMemoryTypes.Dracula.PHASE_3.get();
+            case RAGED, MIST -> ModMemoryTypes.Dracula.PHASE_3.get();
             default -> null;
         };
     }

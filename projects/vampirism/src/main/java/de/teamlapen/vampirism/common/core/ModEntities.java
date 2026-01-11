@@ -13,6 +13,7 @@ import de.teamlapen.vampirism.common.world.entity.*;
 import de.teamlapen.vampirism.common.world.entity.converted.*;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.DefaultConverter;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.SpecialConverter;
+import de.teamlapen.vampirism.common.world.entity.dracula.BloodProjectileEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
@@ -107,6 +108,7 @@ public class ModEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Dracula>> DRACULA = registerEntityType("dracula", Dracula::new, VEnums.VAMPIRE_CATEGORY.getValue(), x -> x.sized(0.6f, 2.8f).clientTrackingRange(10));
     public static final DeferredHolder<EntityType<?>, EntityType<FlyingSwordEntity>> FLYING_SWORD = registerEntityType("flying_sword", FlyingSwordEntity::new, MobCategory.MISC, x -> x.sized(0.5F, 0.5F).fireImmune().noSummon());
     public static final DeferredHolder<EntityType<?>, EntityType<FlyingNeedleEntity>> FLYING_NEEDLE = registerEntityType("flying_needle", FlyingNeedleEntity::new, MobCategory.MISC, x -> x.sized(0.3F, 0.3F).fireImmune().noSummon());
+    public static final DeferredHolder<EntityType<?>, EntityType<BloodProjectileEntity>> BLOOD_PROJECTILE = registerEntityType("blood_projectile", BloodProjectileEntity::new, MobCategory.MISC, x -> x.sized(0.6F, 0.6F).fireImmune().noSummon());
 
 
     public static final DeferredHolder<MapCodec<? extends Converter>, MapCodec<? extends Converter>> DEFAULT_CONVERTER = CONVERTING_HELPER.register("default", () -> DefaultConverter.CODEC);

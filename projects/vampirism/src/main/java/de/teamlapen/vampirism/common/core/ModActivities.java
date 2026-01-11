@@ -21,6 +21,8 @@ public class ModActivities {
     public static final DeferredHolder<Activity, Activity> DRACULA_FLYING_NEEDLE = create("dracula.flying_needle");
     public static final DeferredHolder<Activity, Activity> DRACULA_SUMMON_PROTECTOR = create("dracula.summon_protector");
     public static final DeferredHolder<Activity, Activity> DRACULA_SUMMON_BATS = create("dracula.summon_bats");
+    public static final DeferredHolder<Activity, Activity> DRACULA_BACKSTAB = create("dracula.backstab");
+    public static final DeferredHolder<Activity, Activity> DRACULA_BLOOD_PROJECTILES = create("dracula.blood_projectiles");
 
     private static DeferredHolder<Activity, Activity> create(String name) {
         return ACTIVITIES.register(name, () -> new Activity(VIdentifier.modString(name)));

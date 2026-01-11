@@ -1,5 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula;
 
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
@@ -13,10 +14,12 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -29,11 +32,17 @@ import software.bernie.geckolib.animation.object.PlayState;
 import software.bernie.geckolib.constant.DefaultAnimations;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations {
 
     public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
 
     private long transformationStart;
+    private final List<Pair<Long, Float>> recentDamage = new ArrayList<>();
+    private long mistStartTime = -1;
+    private static final int MIST_DURATION = 5 * 20;
 
     public Dracula(EntityType<? extends Dracula> type, Level level) {
         super(type, level);
@@ -53,16 +62,48 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
     public void tick() {
         super.tick();
         tickTransformation();
+        if (this.getState() == DraculaState.MIST) {
+            tickMistForm();
+        }
+    }
+
+    private void tickMistForm() {
+        if (this.level().isClientSide()) return;
+        if (this.mistStartTime == -1) this.mistStartTime = this.level().getGameTime();
+        if (this.level().getGameTime() - this.mistStartTime > MIST_DURATION) {
+            this.setState(DraculaState.RAGED);
+            this.mistStartTime = -1;
+            return;
+        }
+
+        if (this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(1.0)).forEach(entity -> {
+                if (entity != this) {
+                    entity.hurtServer(serverLevel, serverLevel.damageSources().mobAttack(this), 10.0f);
+                }
+            });
+        }
     }
 
     @Override
     public boolean isInvulnerable() {
-        return super.isInvulnerable() || this.isTransforming();
+        return super.isInvulnerable() || this.isTransforming() || this.getState() == DraculaState.MIST;
     }
 
     @Override
     public boolean isInvulnerableTo(ServerLevel level, DamageSource damageSource) {
-        return super.isInvulnerableTo(level, damageSource) || (!damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && this.isTransforming());
+        if (super.isInvulnerableTo(level, damageSource)) return true;
+        if (damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) return false;
+        DraculaState state = this.getState();
+        if (state.isTransforming || state == DraculaState.MIST) return true;
+        if (damageSource.is(DamageTypeTags.IS_PROJECTILE) && (state == DraculaState.PASSIVE || state == DraculaState.DEFAULT)) {
+            if (damageSource.getDirectEntity() instanceof AbstractArrow arrow) {
+                arrow.setDeltaMovement(arrow.getDeltaMovement().scale(-1.0));
+                arrow.setYRot(arrow.getYRot() + 180.0f);
+            }
+            return true;
+        }
+        return false;
     }
 
     protected void updateEvent() {
@@ -335,6 +376,18 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
         };
         this.setState(stage);
         this.transformationStart = -1;
+
+        knockbackEntities();
+    }
+
+    private void knockbackEntities() {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(10.0)).forEach(entity -> {
+                if (entity != this) {
+                    entity.knockback(1.0, entity.getX() - this.getX(), entity.getZ() - this.getZ());
+                }
+            });
+        }
     }
 
     private void startTransformation() {
@@ -374,6 +427,16 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
 
     @Override
     protected void actuallyHurt(ServerLevel level, DamageSource damageSource, float amount) {
+        DraculaState state = this.getState();
+        if (damageSource.is(DamageTypeTags.IS_PROJECTILE)) {
+            if (state == DraculaState.RANGED) {
+                amount *= 0.5f;
+            } else if (state == DraculaState.RAGED) {
+                if (damageSource.getDirectEntity() instanceof AbstractArrow) {
+                    amount *= 1.5f;
+                }
+            }
+        }
         super.actuallyHurt(level, damageSource, amount);
         if (damageSource.getEntity() instanceof ServerPlayer player) {
             addPlayerToEvent(player);
@@ -381,7 +444,32 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
         if (getState() == DraculaState.DEFAULT) {
             setState(DraculaState.PASSIVE);
         }
+
+        if (this.getState() == DraculaState.PASSIVE && damageSource.getEntity() instanceof LivingEntity attacker) {
+            double d0 = attacker.getX() - this.getX();
+            double d1 = attacker.getZ() - this.getZ();
+            attacker.knockback(0.5D, d0, d1);
+        }
+
+        if (this.getState() == DraculaState.RAGED) {
+            this.recentDamage.add(Pair.of(level.getGameTime(), amount));
+            this.checkMistFormTrigger();
+        }
         updateEvent();
+    }
+
+    private void checkMistFormTrigger() {
+        long gameTime = this.level().getGameTime();
+        this.recentDamage.removeIf(p -> gameTime - p.getFirst() > 100);
+        float total = 0;
+        for (Pair<Long, Float> p : this.recentDamage) {
+            total += p.getSecond();
+        }
+        if (total > this.getMaxHealth() * 0.2f) {
+            this.setState(DraculaState.MIST);
+            this.mistStartTime = gameTime;
+            this.recentDamage.clear();
+        }
     }
 
     @Override

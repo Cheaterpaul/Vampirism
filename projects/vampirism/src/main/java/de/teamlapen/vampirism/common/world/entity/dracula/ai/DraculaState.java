@@ -15,7 +15,8 @@ public enum DraculaState implements StringRepresentable {
     TRANSFORMING_TO_RANGED("transform_to_ranged", FightStage.PHASE_2,true, 5*20),
     RANGED("ranged", FightStage.PHASE_2),
     TRANSFORMING_TO_RAGED("transforming_to_raged",FightStage.PHASE_3, true, 5*20),
-    RAGED("raged",FightStage.PHASE_3)
+    RAGED("raged",FightStage.PHASE_3),
+    MIST("mist", FightStage.PHASE_3)
     ;
 
     public static final StreamCodec<? super RegistryFriendlyByteBuf, DraculaState> STREAM_CODEC = NeoForgeStreamCodecs.enumCodec(DraculaState.class);

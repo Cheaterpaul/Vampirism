@@ -4,6 +4,7 @@ import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.BlindingBatEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.SpawnUtil;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -23,7 +24,8 @@ public class SummonVampireBats {
     public static Set<MemoryModuleType<?>> memories() {
         return Set.of(
                 ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get()
+                ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get(),
+                MemoryModuleType.ATTACK_TARGET
         );
     }
 
@@ -33,8 +35,9 @@ public class SummonVampireBats {
                         inst.absent(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get()),
                         inst.present(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()),
                         inst.absent(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get()),
-                        inst.present(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get())
-                ).apply(inst, (cooldown, active, used, using) ->
+                        inst.present(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get()),
+                        inst.registered(MemoryModuleType.ATTACK_TARGET)
+                ).apply(inst, (cooldown, active, used, using, target) ->
                         (level, dracula, gameTime) -> {
                             summonBats(level, dracula);
                             return true;
@@ -44,7 +47,14 @@ public class SummonVampireBats {
 
     protected static void summonBats(ServerLevel level, Dracula dracula) {
         for (int i = 0; i < 10; i++) {
-            SpawnUtil.trySpawnMob(ModEntities.BLINDING_BAT.get(), EntitySpawnReason.EVENT, level, dracula.blockPosition(), 4, 3, 3, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER, false).ifPresent(BlindingBatEntity::restrictLiveSpan);
+            double angle = i * (Math.PI * 2 / 10);
+            double x = dracula.getX() + Math.cos(angle) * 2;
+            double z = dracula.getZ() + Math.sin(angle) * 2;
+            BlockPos pos = BlockPos.containing(x, dracula.getY() + 1.5, z);
+            SpawnUtil.trySpawnMob(ModEntities.BLINDING_BAT.get(), EntitySpawnReason.EVENT, level, pos, 0, 1, 1, SpawnUtil.Strategy.ON_TOP_OF_COLLIDER, false).ifPresent(bat -> {
+                bat.restrictLiveSpan();
+                bat.setTargeting();
+            });
         }
     }
 }

@@ -1,5 +1,6 @@
 package de.teamlapen.vampirism.common.core;
 
+import com.mojang.serialization.Codec;
 import de.teamlapen.vampirism.REFERENCE;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
@@ -46,6 +47,13 @@ public class ModMemoryTypes {
         public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_NEEDLE_COOLDOWN = unit("action.cooldown.flying_needle");
         public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<List<UUID>>> FLYING_NEEDLES = MEMORY_MODULES.register("action.flying_needle.needles", () -> new MemoryModuleType<>(Optional.of(UUIDUtil.CODEC.listOf())));
 
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> BACKSTAB_ACTIVE = unit("action.active.backstab");
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> BACKSTAB_COOLDOWN = unit("action.cooldown.backstab");
+
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> BLOOD_PROJECTILES_ACTIVE = unit("action.active.blood_projectiles");
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> BLOOD_PROJECTILES_COOLDOWN = unit("action.cooldown.blood_projectiles");
+        public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Integer>> SURROUNDED_TIMER = integer("dracula.surrounded_timer");
+
         private static void init() { }
     }
 
@@ -56,5 +64,9 @@ public class ModMemoryTypes {
 
     private static DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> unit(String name) {
         return MEMORY_MODULES.register(name, () -> new MemoryModuleType<>(Optional.of(Unit.CODEC)));
+    }
+
+    private static DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Integer>> integer(String name) {
+        return MEMORY_MODULES.register(name, () -> new MemoryModuleType<>(Optional.of(Codec.INT)));
     }
 }
