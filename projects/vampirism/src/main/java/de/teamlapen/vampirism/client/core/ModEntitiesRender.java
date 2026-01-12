@@ -80,6 +80,7 @@ public class ModEntitiesRender {
         event.registerEntityRenderer(ModEntities.PARTICLE_CLOUD.get(), (NoopRenderer::new));
         event.registerEntityRenderer(ModEntities.THROWABLE_ITEM.get(), ThrowableItemRenderer::new);
         event.registerEntityRenderer(ModEntities.DARK_BLOOD_PROJECTILE.get(), (DarkBloodProjectileRenderer::new));
+        event.registerEntityRenderer(ModEntities.BLOOD_PROJECTILE.get(), (DarkBloodProjectileRenderer::new));
         event.registerEntityRenderer(ModEntities.SOUL_ORB.get(), SoulOrbRenderer::new);
         event.registerEntityRenderer(ModEntities.HUNTER_TRAINER_DUMMY.get(), e -> new HunterTrainerRenderer(e, false));
         event.registerEntityRenderer(ModEntities.DUMMY_CREATURE.get(), (DummyRenderer::new));

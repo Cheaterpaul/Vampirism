@@ -41,7 +41,7 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
 
     private void updateMemories(Dracula entity) {
         Brain<Dracula> brain = entity.getBrain();
-        Set<MemoryModuleType<Unit>> stageMemories = Stream.of(ModMemoryTypes.Dracula.PHASE_1.get(), ModMemoryTypes.Dracula.PHASE_2.get(), ModMemoryTypes.Dracula.PHASE_3.get()).collect(Collectors.toSet());
+        Set<MemoryModuleType<Unit>> stageMemories = Stream.of(ModMemoryTypes.DRACULA_PHASE_1.get(), ModMemoryTypes.DRACULA_PHASE_2.get(), ModMemoryTypes.DRACULA_PHASE_3.get()).collect(Collectors.toSet());
         MemoryModuleType<Unit> unitMemoryModuleType = memoryForStage(entity.getState());
 
         if (unitMemoryModuleType != null) {
@@ -59,9 +59,9 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
     @Nullable
     private static MemoryModuleType<Unit> memoryForStage(DraculaState state) {
         return switch (state) {
-            case PASSIVE -> ModMemoryTypes.Dracula.PHASE_1.get();
-            case RANGED -> ModMemoryTypes.Dracula.PHASE_2.get();
-            case RAGED, MIST -> ModMemoryTypes.Dracula.PHASE_3.get();
+            case PASSIVE -> ModMemoryTypes.DRACULA_PHASE_1.get();
+            case RANGED -> ModMemoryTypes.DRACULA_PHASE_2.get();
+            case RAGED, MIST -> ModMemoryTypes.DRACULA_PHASE_3.get();
             default -> null;
         };
     }

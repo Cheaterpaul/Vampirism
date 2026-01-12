@@ -1,10 +1,10 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.BloodProjectileEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Unit;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -13,8 +13,19 @@ import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class BloodProjectilesBehavior extends Behavior<Dracula> {
+
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE)
+                .cooldown(ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN, () -> 30 * 20)
+                .addLast(BloodProjectilesBehavior.create(), Set.of(), Set.of(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get(), ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN.get()))
+                .canActivate((level, dracula) -> {
+                    float healthPercent = dracula.getHealth() / dracula.getMaxHealth();
+                    return healthPercent >= 0.4f && healthPercent <= 0.8f;
+                });
+    }
 
     private int ticks = 0;
     private final List<BloodProjectileEntity> spawnedProjectiles = new ArrayList<>();
@@ -25,8 +36,8 @@ public class BloodProjectilesBehavior extends Behavior<Dracula> {
 
     public BloodProjectilesBehavior() {
         super(Map.of(
-                ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
-                ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get(), MemoryStatus.VALUE_PRESENT
+                ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
+                ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get(), MemoryStatus.VALUE_PRESENT
         ), 120);
     }
 
@@ -69,21 +80,18 @@ public class BloodProjectilesBehavior extends Behavior<Dracula> {
         }
 
         if (ticks > 115) {
-            entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get());
+            entity.getBrain().eraseMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get());
         }
     }
 
     @Override
     protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
-        return entity.getBrain().hasMemoryValue(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get());
+        return entity.getBrain().hasMemoryValue(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get());
     }
 
     @Override
     protected void stop(ServerLevel level, Dracula entity, long gameTime) {
-        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN.get(), Unit.INSTANCE, 400);
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get());
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, 100);
+        entity.getBrain().eraseMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get());
         this.spawnedProjectiles.clear();
     }
 }

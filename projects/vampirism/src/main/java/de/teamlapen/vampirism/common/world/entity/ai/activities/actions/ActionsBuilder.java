@@ -1,4 +1,4 @@
-package de.teamlapen.vampirism.common.world.entity.ai.activities;
+package de.teamlapen.vampirism.common.world.entity.ai.activities.actions;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.schedule.Activity;
@@ -14,10 +14,10 @@ public class ActionsBuilder<E extends LivingEntity> {
     private final List<ActionBuilder.Action<E>> actions = new ArrayList<>();
     private Supplier<Integer> cooldownSupplier = () -> 20;
 
-    ActionsBuilder() {
+    public ActionsBuilder() {
     }
 
-    List<ActionBuilder.Action<E>> actions() {
+    public List<ActionBuilder.Action<E>> actions() {
         return Collections.unmodifiableList(actions);
     }
 

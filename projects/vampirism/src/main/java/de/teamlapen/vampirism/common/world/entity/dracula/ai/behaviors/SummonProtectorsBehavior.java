@@ -2,6 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.vampire.BasicVampireEntity;
 import net.minecraft.server.level.ServerLevel;
@@ -15,6 +16,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +25,21 @@ import java.util.UUID;
 
 public class SummonProtectorsBehavior {
 
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE)
+                .cooldown(ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN, () -> 20 * 20)
+                .addLast(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
+                .canActivate((level, dracula) -> dracula.getBrain().getMemory(ModMemoryTypes.SUMMONS.get()).map(List::size).orElse(0) < SummonProtectorsBehavior.MAX_SUMMONS * 0.7);
+    }
+
     public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
         return Set.of();
     }
 
     public static Set<MemoryModuleType<?>> memories() {
         return Set.of(
-                ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get(),
+                ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN.get(),
+                ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE.get(),
                 ModMemoryTypes.SUMMONS.get()
         );
     }
@@ -40,8 +49,8 @@ public class SummonProtectorsBehavior {
     public static OneShot<Dracula> create() {
         return BehaviorBuilder.create(
                 inst -> inst.group(
-                        inst.absent(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN.get()),
-                        inst.present(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE.get()),
+                        inst.absent(ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN.get()),
+                        inst.present(ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE.get()),
                         inst.registered(ModMemoryTypes.SUMMONS.get())
                 ).apply(inst, (used, using, summons) ->
                         ((level, dracula, gameTime) -> {
@@ -70,7 +79,7 @@ public class SummonProtectorsBehavior {
     }
 
 
-    protected static LivingEntity summon(ServerLevel level, Dracula dracula) {
+    protected static @Nullable LivingEntity summon(ServerLevel level, Dracula dracula) {
         BasicVampireEntity basicVampireEntity = ModEntities.VAMPIRE.get().create(level, EntitySpawnReason.EVENT);
         if (basicVampireEntity != null) {
             RandomSource random = dracula.getRandom();

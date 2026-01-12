@@ -1,4 +1,4 @@
-package de.teamlapen.vampirism.common.world.entity.ai.activities;
+package de.teamlapen.vampirism.common.world.entity.ai.activities.actions;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -17,7 +17,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
     private final List<ActionBuilder.Action<E>> actions;
     private Behavior.Status status = Behavior.Status.STOPPED;
 
-    ActionBehavior(List<ActionBuilder.Action<E>> builder) {
+    public ActionBehavior(List<ActionBuilder.Action<E>> builder) {
         this.actions = builder;
     }
 
@@ -35,7 +35,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
     public final boolean tryStart(ServerLevel level, E entity, long gameTime) {
         //noinspection unchecked
         Brain<E> brain = (Brain<E>) entity.getBrain();
-        if (brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()) || brain.hasMemoryValue(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get())) {
+        if (brain.hasMemoryValue(ModMemoryTypes.ACTION_ACTIVE.get()) || brain.hasMemoryValue(ModMemoryTypes.ACTION_COOLDOWN.get())) {
             return false;
         }
 
@@ -48,7 +48,7 @@ public class ActionBehavior<E extends LivingEntity> implements BehaviorControl<E
             }
 
             if (action.requirements().stream().allMatch(pair -> brain.checkMemory(pair.getFirst(), pair.getSecond())) && action.precondition().test(level, entity)) {
-                brain.setMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
+                brain.setMemory(ModMemoryTypes.ACTION_ACTIVE.get(), net.minecraft.util.Unit.INSTANCE);
                 brain.setMemory(action.activeMemory(), Unit.INSTANCE);
                 brain.setActiveActivityIfPossible(action.activity());
                 this.status = Behavior.Status.RUNNING;

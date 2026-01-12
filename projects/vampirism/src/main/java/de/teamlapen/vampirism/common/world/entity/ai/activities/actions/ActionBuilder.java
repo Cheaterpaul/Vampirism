@@ -1,4 +1,4 @@
-package de.teamlapen.vampirism.common.world.entity.ai.activities;
+package de.teamlapen.vampirism.common.world.entity.ai.activities.actions;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -63,10 +63,6 @@ public class ActionBuilder<E extends LivingEntity> {
     //<editor-fold desc="Behaviors">
 
     public ActionBuilder<E> add(BehaviorControl<? super E> control) {
-        if (control instanceof IInformativeBehavior<?> informative) {
-            //noinspection unchecked
-            return this.add(control, (Set<? extends SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors(), informative.getMemories());
-        }
         return this.add(control, Set.of(), Set.of());
     }
 
@@ -147,7 +143,7 @@ public class ActionBuilder<E extends LivingEntity> {
         return new Action<>(activity, sensors, memories, activeMemory, cooldown, requirements, canActivate, buildBehaviors());
     }
 
-    record Action<E extends LivingEntity>(
+    public record Action<E extends LivingEntity>(
             Activity activity,
             Collection<SensorType<? extends Sensor<? super E>>> sensors,
             Collection<MemoryModuleType<?>> memories,
@@ -202,9 +198,9 @@ public class ActionBuilder<E extends LivingEntity> {
             private void stopAction(E entity) {
                 Brain<?> brain = entity.getBrain();
                 brain.eraseMemory(activeMemory);
-                brain.eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
+                brain.eraseMemory(ModMemoryTypes.ACTION_ACTIVE.get());
                 brain.setMemoryWithExpiry(cooldownMemory.memory, Unit.INSTANCE, cooldownMemory.cooldown());
-                brain.setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, cooldownSupplier.get());
+                brain.setMemoryWithExpiry(ModMemoryTypes.ACTION_COOLDOWN.get(), Unit.INSTANCE, cooldownSupplier.get());
             }
 
             @Override

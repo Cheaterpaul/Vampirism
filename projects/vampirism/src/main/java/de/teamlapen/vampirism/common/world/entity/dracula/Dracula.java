@@ -4,6 +4,8 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
+import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.memory.HurtByEntities;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAiSystem;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -12,10 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -423,6 +422,16 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
     public void heal(float healAmount) {
         super.heal(healAmount);
         updateEvent();
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float p_376610_) {
+        if(super.hurtServer(level, source, p_376610_)) {
+            HurtByEntities hurtByEntities = getBrain().getMemory(ModMemoryTypes.HURT_BY_ENTITIES.get()).orElseGet(HurtByEntities::empty);
+            getBrain().setMemory(ModMemoryTypes.HURT_BY_ENTITIES.get(), hurtByEntities.hurtBy(level,this, source));
+            return true;
+        }
+        return false;
     }
 
     @Override

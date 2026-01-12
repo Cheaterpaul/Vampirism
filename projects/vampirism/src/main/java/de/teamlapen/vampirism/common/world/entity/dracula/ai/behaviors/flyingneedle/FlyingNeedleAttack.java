@@ -1,6 +1,8 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingneedle;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.core.ModSensors;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
@@ -12,7 +14,6 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorUtils;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 
@@ -20,6 +21,11 @@ import java.util.*;
 
 public class FlyingNeedleAttack extends Behavior<Dracula> {
 
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.FLYING_NEEDLE_ACTIVE)
+                .cooldown(ModMemoryTypes.FLYING_NEEDLE_COOLDOWN, () -> 20 * 20)
+                .addLast(FlyingNeedleAttack.create(), FlyingNeedleAttack.sensors(), FlyingNeedleAttack.memories());
+    }
     private enum Phase {
         CHARGING,
         FIRING
@@ -32,15 +38,15 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
     private static final int MAX_NEEDLES = 6;
 
     public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
-        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES, ModSensors.NEAREST_TARGETABLE_ENTITIES.get());
     }
 
     public static Set<MemoryModuleType<?>> memories() {
         return Set.of(
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(),
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-                ModMemoryTypes.Dracula.FLYING_NEEDLES.get()
+                ModMemoryTypes.FLYING_NEEDLE_COOLDOWN.get(),
+                ModMemoryTypes.FLYING_NEEDLE_ACTIVE.get(),
+                ModMemoryTypes.NEAREST_ATTACKABLE.get(),
+                ModMemoryTypes.FLYING_NEEDLES.get()
         );
     }
 
@@ -49,10 +55,10 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
     }
     public FlyingNeedleAttack() {
         super(Map.of(
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
-                ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT,
-                ModMemoryTypes.Dracula.FLYING_NEEDLES.get(), MemoryStatus.REGISTERED
+                ModMemoryTypes.FLYING_NEEDLE_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
+                ModMemoryTypes.FLYING_NEEDLE_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
+                ModMemoryTypes.NEAREST_ATTACKABLE.get(), MemoryStatus.VALUE_PRESENT,
+                ModMemoryTypes.FLYING_NEEDLES.get(), MemoryStatus.REGISTERED
         ), 400);
     }
 
@@ -77,22 +83,14 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
                 FlyingNeedleEntity needle = new FlyingNeedleEntity(level, entity, 4.0f, needles.size(), MAX_NEEDLES);
                 level.addFreshEntity(needle);
                 needles.add(needle);
-                entity.getBrain().setMemory(ModMemoryTypes.Dracula.FLYING_NEEDLES.get(), needles.stream().map(Entity::getUUID).toList());
+                entity.getBrain().setMemory(ModMemoryTypes.FLYING_NEEDLES.get(), needles.stream().map(Entity::getUUID).toList());
             }
 
             if (needles.size() == MAX_NEEDLES && ticks >= 80) { // Give some time for charging
-                NearestVisibleLivingEntities visibleEntities = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get();
-                visibleEntities.findAll(e -> e.distanceToSqr(entity) < 20 * 20 && e != entity).forEach(targets::add);
+                targets.addAll(entity.getBrain().getMemory(ModMemoryTypes.NEAREST_ATTACKABLE.get()).orElseGet(List::of).stream().filter(x -> x.distanceToSqr(entity) < 20 * 20).toList());
 
                 if (targets.isEmpty()) {
-                    for (LivingEntity e : visibleEntities.findAll(e -> e != entity)) {
-                        targets.add(e);
-                        break;
-                    }
-                }
-
-                if (targets.isEmpty()) {
-                    doStop(entity);
+                    doStop(level, entity, gameTime);
                 } else {
                     phase = Phase.FIRING;
                     ticks = 0;
@@ -102,17 +100,17 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
             if (ticks % 10 == 0) {
                 needles.removeIf(n -> !n.isAlive() || n.isFlying());
                 if (needles.isEmpty()) {
-                    doStop(entity);
+                    doStop(level, entity, gameTime);
                     return;
                 }
 
-                targets.removeIf(e -> !e.isAlive());
                 if (targets.isEmpty()) {
-                    doStop(entity);
+                    doStop(level, entity, gameTime);
                     return;
                 }
 
                 FlyingNeedleEntity needle = needles.getFirst();
+                needles.remove(needle);
                 LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
                 BehaviorUtils.lookAtEntity(entity, target);
                 needle.shoot(target);
@@ -122,34 +120,20 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
         }
     }
 
-    private void doStop(Dracula entity) {
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
-    }
-
     @Override
     protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
-        return entity.getBrain().hasMemoryValue(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
+        return entity.getBrain().hasMemoryValue(ModMemoryTypes.FLYING_NEEDLE_ACTIVE.get());
     }
 
     @Override
     protected void stop(ServerLevel level, Dracula entity, long gameTime) {
         Brain<Dracula> brain = entity.getBrain();
-        var uuids = brain.getMemory(ModMemoryTypes.Dracula.FLYING_NEEDLES.get()).stream().flatMap(Collection::stream).map(level::getEntity).toList();
+        var uuids = brain.getMemory(ModMemoryTypes.FLYING_NEEDLES.get()).stream().flatMap(Collection::stream).map(level::getEntity).toList();
         for (Entity uuid : uuids) {
             if (uuid instanceof FlyingNeedleEntity needle && needle.isAlive() && !needle.isFlying()) {
                 needle.discard();
             }
         }
-        brain.eraseMemory(ModMemoryTypes.Dracula.FLYING_NEEDLES.get());
-
-//        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.FLYING_NEEDLE_COOLDOWN.get(), Unit.INSTANCE, 300);
-//        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.FLYING_NEEDLE_ACTIVE.get());
-//        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-//        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, 100);
-//        for (FlyingNeedleEntity needle : needles) {
-//            if (needle.isAlive() && !needle.isFlying()) {
-//                needle.discard();
-//            }
-//        }
+        brain.eraseMemory(ModMemoryTypes.FLYING_NEEDLES.get());
     }
 }

@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.Brain;
@@ -16,8 +17,21 @@ import java.util.stream.Stream;
 
 public class RegenerationBehavior extends Behavior<Dracula> {
 
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.REGENERATION_ACTIVE)
+                .cooldown(ModMemoryTypes.REGENERATION_COOLDOWN, () -> 60 * 20)
+                .addLast(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
+                .canActivate((level, dracula) -> {
+                    float v = (dracula.getHealth() / dracula.getMaxHealth());
+                    float gate = 1 - RegenerationBehavior.HEALTH_PERCENTAGE;
+                    if (v >= gate) {
+                        return false;
+                    }
+                    return dracula.getRandom().nextFloat() < ((1 - v) / gate);
+                });
+    }
     public static Set<MemoryModuleType<?>> memories() {
-        return Set.of(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(), ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get(), ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
+        return Set.of(ModMemoryTypes.REGENERATION_COOLDOWN.get(), ModMemoryTypes.REGENERATION_ACTIVE.get(), ModMemoryTypes.ACTION_COOLDOWN.get(), ModMemoryTypes.ACTION_ACTIVE.get());
     }
 
     public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
@@ -26,8 +40,8 @@ public class RegenerationBehavior extends Behavior<Dracula> {
 
     public static Stream<MemoryModuleType<?>> requires() {
         return Stream.of(
-                ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get());
+                ModMemoryTypes.REGENERATION_COOLDOWN.get(),
+                ModMemoryTypes.REGENERATION_ACTIVE.get());
     }
 
     private static final int DURATION = 10 * 20;
@@ -39,8 +53,8 @@ public class RegenerationBehavior extends Behavior<Dracula> {
 
     public RegenerationBehavior() {
         super(Map.of(
-                ModMemoryTypes.Dracula.REGENERATION_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
-                ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get(), MemoryStatus.VALUE_PRESENT
+                ModMemoryTypes.REGENERATION_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
+                ModMemoryTypes.REGENERATION_ACTIVE.get(), MemoryStatus.VALUE_PRESENT
         ), DURATION);
     }
 
@@ -48,12 +62,11 @@ public class RegenerationBehavior extends Behavior<Dracula> {
     protected void start(ServerLevel level, Dracula entity, long gameTime) {
         Brain<Dracula> brain = entity.getBrain();
         brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
-        brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
     }
 
     @Override
     protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
-        return entity.getBrain().getMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE.get()).isPresent();
+        return entity.getBrain().getMemory(ModMemoryTypes.REGENERATION_ACTIVE.get()).isPresent();
     }
 
     @Override

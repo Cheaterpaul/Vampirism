@@ -1,11 +1,13 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.flyingsword;
 
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.core.ModSensors;
+import de.teamlapen.vampirism.common.particles.FlyingBloodEntityParticleOptions;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
 import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -23,9 +25,12 @@ import java.util.Set;
 
 public class FlyingSwordAttack extends Behavior<Dracula> {
 
-    private enum Phase {
-        CHANNELING,
-        ATTACKING
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.FLYING_SWORD_ACTIVE)
+                .cooldown(ModMemoryTypes.FLYING_SWORD_COOLDOWN, () -> 5 * 20)
+                .add(EquipSword.create(), EquipSword.sensors(), EquipSword.memories())
+                .add(FlyingSwordAttack.create(), FlyingSwordAttack.sensors(), FlyingSwordAttack.memories())
+                .addLast(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories());
     }
 
     private Phase phase = Phase.CHANNELING;
@@ -35,15 +40,15 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
     private final List<LivingEntity> targets = new ArrayList<>();
 
     public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
-        return Set.of(SensorType.NEAREST_LIVING_ENTITIES);
+        return Set.of(SensorType.NEAREST_LIVING_ENTITIES, ModSensors.NEAREST_TARGETABLE_ENTITIES.get());
     }
 
     public static Set<MemoryModuleType<?>> memories() {
         return Set.of(
-                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(),
-                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(),
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES
+                ModMemoryTypes.FLYING_SWORD_COOLDOWN.get(),
+                ModMemoryTypes.FLYING_SWORD_ACTIVE.get(),
+                ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(),
+                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()
         );
     }
 
@@ -53,10 +58,10 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
 
     public FlyingSwordAttack() {
         super(Map.of(
-                ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
-                ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
-                ModMemoryTypes.Dracula.FLYING_SWORD_EQUIPPED.get(), MemoryStatus.VALUE_PRESENT,
-                MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
+                ModMemoryTypes.FLYING_SWORD_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
+                ModMemoryTypes.FLYING_SWORD_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
+                ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(), MemoryStatus.VALUE_PRESENT,
+                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryStatus.VALUE_PRESENT
         ), 400);
     }
 
@@ -77,9 +82,11 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
 
         if (phase == Phase.CHANNELING) {
             if (ticks % 10 == 0) {
-                 NearestVisibleLivingEntities visibleEntities = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get();
+                 NearestVisibleLivingEntities visibleEntities = entity.getBrain().getMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()).orElseGet(NearestVisibleLivingEntities::empty);
                  visibleEntities.findAll(e -> e.distanceToSqr(entity) < 15 * 15 && e != entity).forEach(target -> {
-                     target.hurtServer(level, level.damageSources().magic(), 1.0f);
+                     level.addParticle(new FlyingBloodEntityParticleOptions(entity.getId(), true), target.getX(), target.getY(),target.getZ(), 1,1,1);
+                     target.hurtServer(level, level.damageSources().magic(), 0.5f);
+
                      if (!targets.contains(target)) {
                          targets.add(target);
                      }
@@ -88,7 +95,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
 
             if (ticks >= 40) {
                 if (targets.isEmpty()) {
-                    NearestVisibleLivingEntities visibleEntities = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).get();
+                    NearestVisibleLivingEntities visibleEntities = entity.getBrain().getMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()).orElseGet(NearestVisibleLivingEntities::empty);
                     for (LivingEntity e : visibleEntities.findAll(e -> e != entity)) {
                         targets.add(e);
                         break;
@@ -96,7 +103,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 }
 
                 if (targets.isEmpty()) {
-                    doStop(entity);
+                    doStop(level, entity, gameTime);
                 } else {
                     phase = Phase.ATTACKING;
                     ticks = 0;
@@ -107,7 +114,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 if (attacksDone < totalAttacks) {
                     targets.removeIf(e -> !e.isAlive());
                     if (targets.isEmpty()) {
-                        doStop(entity);
+                        doStop(level, entity, gameTime);
                         return;
                     }
                     LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
@@ -121,26 +128,20 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                     entity.triggerAnim(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2);
                     attacksDone++;
                 } else {
-                    doStop(entity);
+                    doStop(level, entity, gameTime);
                 }
             }
         }
     }
 
-    private void doStop(Dracula entity) {
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get());
-    }
-
     @Override
     protected boolean canStillUse(ServerLevel level, Dracula entity, long gameTime) {
-        return entity.getBrain().hasMemoryValue(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get());
+        return entity.getBrain().hasMemoryValue(ModMemoryTypes.FLYING_SWORD_ACTIVE.get());
     }
 
-    @Override
-    protected void stop(ServerLevel level, Dracula entity, long gameTime) {
-        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.FLYING_SWORD_COOLDOWN.get(), Unit.INSTANCE, 400);
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.FLYING_SWORD_ACTIVE.get());
-        entity.getBrain().eraseMemory(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        entity.getBrain().setMemoryWithExpiry(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get(), Unit.INSTANCE, 100);
+
+    private enum Phase {
+        CHANNELING,
+        ATTACKING
     }
 }

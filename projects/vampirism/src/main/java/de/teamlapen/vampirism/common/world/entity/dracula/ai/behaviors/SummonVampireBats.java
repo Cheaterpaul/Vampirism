@@ -2,7 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.BlindingBatEntity;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -18,26 +18,34 @@ import java.util.Set;
 
 public class SummonVampireBats {
 
+    public static void configure(ActionBuilder<Dracula> builder) {
+        builder.activeMemory(ModMemoryTypes.SUMMON_VAMPIRE_BATS_ACTIVE)
+                .cooldown(ModMemoryTypes.SUMMON_VAMPIRE_BATS_COOLDOWN, () -> 20 * 20)
+                .addLast(SummonVampireBats.create(), SummonVampireBats.sensors(), SummonVampireBats.memories())
+                .canActivate((level, dracula) -> dracula.getHealth() < (dracula.getMaxHealth() * 0.7));
+    }
+
     public static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
         return Set.of();
     }
+
     public static Set<MemoryModuleType<?>> memories() {
         return Set.of(
-                ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get(),
-                ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get(),
-                MemoryModuleType.ATTACK_TARGET
+                ModMemoryTypes.SUMMON_VAMPIRE_BATS_COOLDOWN.get(),
+                ModMemoryTypes.SUMMON_VAMPIRE_BATS_ACTIVE.get(),
+                ModMemoryTypes.ACTION_COOLDOWN.get(),
+                ModMemoryTypes.ACTION_ACTIVE.get()
         );
     }
 
     public static OneShot<Dracula> create() {
         return BehaviorBuilder.create(
                 inst -> inst.group(
-                        inst.absent(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get()),
-                        inst.present(ModMemoryTypes.Dracula.ACTION_ACTIVE.get()),
-                        inst.absent(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_COOLDOWN.get()),
-                        inst.present(ModMemoryTypes.Dracula.SUMMON_VAMPIRE_BATS_ACTIVE.get()),
-                        inst.registered(MemoryModuleType.ATTACK_TARGET)
-                ).apply(inst, (cooldown, active, used, using, target) ->
+                        inst.absent(ModMemoryTypes.ACTION_COOLDOWN.get()),
+                        inst.present(ModMemoryTypes.ACTION_ACTIVE.get()),
+                        inst.absent(ModMemoryTypes.SUMMON_VAMPIRE_BATS_COOLDOWN.get()),
+                        inst.present(ModMemoryTypes.SUMMON_VAMPIRE_BATS_ACTIVE.get())
+                ).apply(inst, (cooldown, active, used, using) ->
                         (level, dracula, gameTime) -> {
                             summonBats(level, dracula);
                             return true;

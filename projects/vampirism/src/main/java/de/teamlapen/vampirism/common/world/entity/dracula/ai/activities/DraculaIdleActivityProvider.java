@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.BehaviorDescription;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
@@ -31,6 +32,14 @@ public class DraculaIdleActivityProvider extends AiActivityProvider<Dracula> {
                                 Pair.of(createIdleLookBehaviors(), 2),
                                 Pair.of(createIdleMovementBehaviors(0.2f), 1)
                         )), Sets.union(movementSensors(), lookSensors()), Sets.union(movementMemories(), lookMemories()));
+    }
+
+    public static BehaviorDescription<Dracula> buildMovement(float speed) {
+        return new BehaviorDescription<>(createIdleMovementBehaviors(speed), movementSensors(), movementMemories());
+    }
+
+    public static BehaviorDescription<Dracula> buildLook() {
+        return new BehaviorDescription<>(createIdleLookBehaviors(), lookSensors(), lookMemories());
     }
 
     public static RunOne<Dracula> createIdleMovementBehaviors(float speed) {

@@ -4,6 +4,7 @@ import de.teamlapen.vampirism.common.core.ModActivities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.BehaviorDescription;
 import de.teamlapen.vampirism.common.world.entity.ai.system.AiActivityProvider;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.BloodProjectilesBehavior;
@@ -28,39 +29,20 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
 
     @Override
     protected void createActivity(ActivityBuilder<Dracula> builder) {
-        builder
-                .add(StopAttackingIfTargetInvalid.create(), Set.of(), Set.of(MemoryModuleType.ATTACK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
-                .add(MistFormBehavior.create(0.6f), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.ATTACK_TARGET))
-                .add(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
-                .add(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget), Set.of(ModSensors.NEAREST_ENTITY.get()), Set.of(MemoryModuleType.ATTACK_TARGET,MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryModuleType.ANGRY_AT))
-                .add(MeleeAttack.create(15), Set.of(SensorType.NEAREST_LIVING_ENTITIES), Set.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
-                .add(DraculaIdleActivityProvider.createIdleLookBehaviors(), DraculaIdleActivityProvider.lookSensors(), DraculaIdleActivityProvider.lookMemories())
-                .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.4f), DraculaIdleActivityProvider.movementSensors(), DraculaIdleActivityProvider.movementMemories())
-                .requires(ModMemoryTypes.Dracula.PHASE_3, MemoryStatus.VALUE_PRESENT);
+        builder.requires(ModMemoryTypes.DRACULA_PHASE_3, MemoryStatus.VALUE_PRESENT)
+                .add(buildStopTarget())
+                .add(MistFormBehavior.build(0.6f))
+                .add(buildOutOfRange())
+                .add(buildStartAttack())
+                .add(buildMelee())
+                .add(DraculaIdleActivityProvider.buildLook())
+                .add(DraculaIdleActivityProvider.buildMovement(0.4f))
+        ;
 
         var actions = builder.useActions();
 
-        actions.addAction(ModActivities.DRACULA_REGENERATION, action -> action
-                .activeMemory(ModMemoryTypes.Dracula.REGENERATION_ACTIVE)
-                .cooldown(ModMemoryTypes.Dracula.REGENERATION_COOLDOWN, () -> 60 * 20)
-                .addLast(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
-                .canActivate((level, dracula) -> {
-                    float v = (dracula.getHealth() / dracula.getMaxHealth());
-                    float gate = 1 - RegenerationBehavior.HEALTH_PERCENTAGE;
-                    if (v >= gate) {
-                        return false;
-                    }
-                    return dracula.getRandom().nextFloat() < ((1 - v) / gate);
-                }));
-
-        actions.addAction(ModActivities.DRACULA_BLOOD_PROJECTILES, action -> action
-                .activeMemory(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE)
-                .cooldown(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN, () -> 30 * 20)
-                .addLast(BloodProjectilesBehavior.create(), Set.of(), Set.of(ModMemoryTypes.Dracula.BLOOD_PROJECTILES_ACTIVE.get(), ModMemoryTypes.Dracula.BLOOD_PROJECTILES_COOLDOWN.get()))
-                .canActivate((level, dracula) -> {
-                    float healthPercent = dracula.getHealth() / dracula.getMaxHealth();
-                    return healthPercent >= 0.4f && healthPercent <= 0.8f;
-                }));
+        actions.addAction(ModActivities.DRACULA_REGENERATION, RegenerationBehavior::configure);
+        actions.addAction(ModActivities.DRACULA_BLOOD_PROJECTILES, BloodProjectilesBehavior::configure);
     }
 
     private static Optional<? extends LivingEntity> findNearestValidAttackTarget(ServerLevel level, Dracula dracula) {
@@ -68,7 +50,27 @@ public class DraculaPhase3ActivityProvider extends AiActivityProvider<Dracula> {
         if (optional.isPresent() && Sensor.isEntityAttackableIgnoringLineOfSight(level, dracula, optional.get())) {
             return optional;
         } else {
-            return dracula.getBrain().getMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get());
+            return dracula.getBrain().getMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()).flatMap(x -> x.findClosest(y -> true));
         }
     }
+
+    //<editor-fold desc="Phase Behaviors">
+
+    private BehaviorDescription<Dracula> buildStopTarget() {
+        return new BehaviorDescription<>(StopAttackingIfTargetInvalid.create(), Set.of(), Set.of(MemoryModuleType.ATTACK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE));
+    }
+
+    private BehaviorDescription<Dracula> buildOutOfRange() {
+        return new BehaviorDescription<>(SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.0F), Set.of(), Set.of(MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES));
+    }
+
+    private BehaviorDescription<Dracula> buildStartAttack() {
+        return new BehaviorDescription<>(StartAttacking.create(DraculaPhase3ActivityProvider::findNearestValidAttackTarget), Set.of(ModSensors.NEAREST_TARGETABLE_ENTITIES.get()), Set.of(MemoryModuleType.ATTACK_TARGET,MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, ModMemoryTypes.NEAREST_ATTACKABLE.get(), MemoryModuleType.ANGRY_AT));
+    }
+
+    public BehaviorDescription<Dracula> buildMelee() {
+        return new BehaviorDescription<>(MeleeAttack.create(15), Set.of(SensorType.NEAREST_LIVING_ENTITIES), Set.of(MemoryModuleType.LOOK_TARGET, MemoryModuleType.ATTACK_TARGET, MemoryModuleType.ATTACK_COOLING_DOWN, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES));
+    }
+
+    //</editor-fold>
 }

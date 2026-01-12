@@ -3,6 +3,9 @@ package de.teamlapen.vampirism.common.world.entity.ai.activities;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBehavior;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionsBuilder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -61,14 +64,14 @@ public class ActivityBuilder<E extends LivingEntity> {
     //<editor-fold desc="Actions">
 
     public ActionsBuilder<E> useActions(Supplier<Integer> cooldownSupplier) {
-        this.memories.add(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        this.memories.add(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get());
+        this.memories.add(ModMemoryTypes.ACTION_ACTIVE.get());
+        this.memories.add(ModMemoryTypes.ACTION_COOLDOWN.get());
         return this.actionBuilders.cooldown(cooldownSupplier);
     }
 
     public ActionsBuilder<E> useActions() {
-        this.memories.add(ModMemoryTypes.Dracula.ACTION_ACTIVE.get());
-        this.memories.add(ModMemoryTypes.Dracula.ACTION_COOLDOWN.get());
+        this.memories.add(ModMemoryTypes.ACTION_ACTIVE.get());
+        this.memories.add(ModMemoryTypes.ACTION_COOLDOWN.get());
         return this.actionBuilders;
     }
 
@@ -77,10 +80,6 @@ public class ActivityBuilder<E extends LivingEntity> {
     //<editor-fold desc="Behaviors">
 
     public ActivityBuilder<E> add(BehaviorControl<? super E> control) {
-        if (control instanceof IInformativeBehavior<?> informative) {
-            //noinspection unchecked
-            return this.add(control, (Set<SensorType<? extends Sensor<? super E>>>) (Set<?>) informative.getSensors(), informative.getMemories());
-        }
         return this.add(control, Set.of(), Set.of());
     }
 
@@ -88,6 +87,13 @@ public class ActivityBuilder<E extends LivingEntity> {
         this.behaviors.add(control);
         this.sensors.addAll(sensors);
         this.memories.addAll(memories);
+        return this;
+    }
+
+    public ActivityBuilder<E> add(BehaviorDescription<E> consumer) {
+        this.behaviors.add(consumer.control());
+        this.sensors.addAll(consumer.sensors());
+        this.memories.addAll(consumer.memories());
         return this;
     }
 

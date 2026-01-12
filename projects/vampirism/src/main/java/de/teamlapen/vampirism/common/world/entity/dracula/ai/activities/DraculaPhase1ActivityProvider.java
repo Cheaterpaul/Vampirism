@@ -8,8 +8,6 @@ import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors.SummonProtectorsBehavior;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 
-import java.util.List;
-
 public class DraculaPhase1ActivityProvider extends AiActivityProvider<Dracula> {
 
     public DraculaPhase1ActivityProvider() {
@@ -17,16 +15,13 @@ public class DraculaPhase1ActivityProvider extends AiActivityProvider<Dracula> {
     }
 
     public void createActivity(ActivityBuilder<Dracula> builder) {
-        builder.add(DraculaIdleActivityProvider.createIdleLookBehaviors(), DraculaIdleActivityProvider.lookSensors(), DraculaIdleActivityProvider.lookMemories())
-                .add(DraculaIdleActivityProvider.createIdleMovementBehaviors(0.3f), DraculaIdleActivityProvider.movementSensors(), DraculaIdleActivityProvider.movementMemories())
-                .requires(ModMemoryTypes.Dracula.PHASE_1, MemoryStatus.VALUE_PRESENT);
+        builder.requires(ModMemoryTypes.DRACULA_PHASE_1, MemoryStatus.VALUE_PRESENT)
+                .add(DraculaIdleActivityProvider.buildLook())
+                .add(DraculaIdleActivityProvider.buildMovement(0.3f))
+        ;
 
         var actions = builder.useActions();
 
-        actions.addAction(ModActivities.DRACULA_SUMMON_PROTECTOR, action -> action
-                .activeMemory(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_ACTIVE)
-                .cooldown(ModMemoryTypes.Dracula.SUMMON_PROTECTOR_COOLDOWN, () -> 20 * 20)
-                .addLast(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
-                .canActivate((level, dracula) -> dracula.getBrain().getMemory(ModMemoryTypes.SUMMONS.get()).map(List::size).orElse(0) < SummonProtectorsBehavior.MAX_SUMMONS * 0.7));
+        actions.addAction(ModActivities.DRACULA_SUMMON_PROTECTOR, SummonProtectorsBehavior::configure);
     }
 }
