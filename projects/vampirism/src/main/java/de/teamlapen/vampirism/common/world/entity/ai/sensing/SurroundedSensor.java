@@ -11,6 +11,9 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Checks how long the sensor owner is surrounded by attackable entities.
+ */
 public class SurroundedSensor<T extends LivingEntity> extends Sensor<T> {
 
     private static final int RADIUS_SQT = 4;

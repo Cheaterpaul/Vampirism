@@ -20,7 +20,7 @@ public class RegenerationBehavior extends Behavior<Dracula> {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.REGENERATION_ACTIVE)
                 .cooldown(ModMemoryTypes.REGENERATION_COOLDOWN, () -> 60 * 20)
-                .addLast(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
+                .add(RegenerationBehavior.create(), RegenerationBehavior.sensors(), RegenerationBehavior.memories())
                 .canActivate((level, dracula) -> {
                     float v = (dracula.getHealth() / dracula.getMaxHealth());
                     float gate = 1 - RegenerationBehavior.HEALTH_PERCENTAGE;

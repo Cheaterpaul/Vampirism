@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.ai.system;
 
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityEntry;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -18,7 +19,7 @@ import java.util.stream.Stream;
 public abstract class AiActivityProvider<E extends LivingEntity> {
 
     private final Activity activity;
-    protected final ActivityBuilder.ActivityEntry<E> activityEntry;
+    protected final ActivityEntry<E> activityEntry;
 
     public AiActivityProvider(Activity activity) {
         this.activity = activity;

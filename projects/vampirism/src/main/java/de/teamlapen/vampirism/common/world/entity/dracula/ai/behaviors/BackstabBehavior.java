@@ -23,7 +23,7 @@ public class BackstabBehavior extends Behavior<Dracula> {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.BACKSTAB_ACTIVE)
                 .cooldown(ModMemoryTypes.BACKSTAB_COOLDOWN, () -> 15 * 20)
-                .addLast(BackstabBehavior.create(), BackstabBehavior.sensors(), BackstabBehavior.memories())
+                .add(BackstabBehavior.create(), BackstabBehavior.sensors(), BackstabBehavior.memories())
                 .canActivate((level, dracula) -> dracula.getBrain().hasMemoryValue(ModMemoryTypes.HURT_BY_ENTITIES.get()));
     }
 

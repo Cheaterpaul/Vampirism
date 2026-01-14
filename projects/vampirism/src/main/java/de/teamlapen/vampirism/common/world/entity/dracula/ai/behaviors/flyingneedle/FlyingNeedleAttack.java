@@ -24,7 +24,7 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.FLYING_NEEDLE_ACTIVE)
                 .cooldown(ModMemoryTypes.FLYING_NEEDLE_COOLDOWN, () -> 20 * 20)
-                .addLast(FlyingNeedleAttack.create(), FlyingNeedleAttack.sensors(), FlyingNeedleAttack.memories());
+                .add(FlyingNeedleAttack.create(), FlyingNeedleAttack.sensors(), FlyingNeedleAttack.memories());
     }
     private enum Phase {
         CHARGING,

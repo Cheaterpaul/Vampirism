@@ -8,6 +8,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
@@ -17,6 +18,8 @@ import java.util.Set;
  */
 public abstract class AiSystem<E extends LivingEntity> {
     protected final List<AiActivityProvider<E>> activityProviders;
+
+    private Brain.@Nullable Provider<E> brainProvider;
 
     public AiSystem() {
         this.activityProviders = this.createActivityProviders();
@@ -29,14 +32,14 @@ public abstract class AiSystem<E extends LivingEntity> {
 
     public Set<SensorType<? extends Sensor<? super E>>> getSensors() {
         return this.activityProviders.stream()
-                .flatMap(p -> p.getSensors().stream())
-                .collect(ImmutableSet.toImmutableSet());
+                    .flatMap(p -> p.getSensors().stream())
+                    .collect(ImmutableSet.toImmutableSet());
     }
 
     public Set<MemoryModuleType<?>> getMemoryModules() {
         return this.activityProviders.stream()
-                .flatMap(p -> p.getMemoryModules().stream())
-                .collect(ImmutableSet.toImmutableSet());
+                    .flatMap(p -> p.getMemoryModules().stream())
+                    .collect(ImmutableSet.toImmutableSet());
     }
 
     public Brain<E> initializeBrain(Brain<E> brain) {
@@ -47,7 +50,10 @@ public abstract class AiSystem<E extends LivingEntity> {
     }
 
     public Brain.Provider<E> brainProvider() {
-        return Brain.provider(getMemoryModules(), getSensors());
+        if (this.brainProvider == null) {
+            this.brainProvider = Brain.provider(getMemoryModules(), getSensors());
+        }
+        return this.brainProvider;
     }
 
     /**
@@ -61,6 +67,7 @@ public abstract class AiSystem<E extends LivingEntity> {
 
     public abstract void tick(ServerLevel level, E entity);
 
+    @SuppressWarnings("unchecked")
     public void stop(ServerLevel level, E entity) {
         Brain<E> brain = (Brain<E>) entity.getBrain();
         brain.stopAll(level, entity);

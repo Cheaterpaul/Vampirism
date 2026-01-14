@@ -9,15 +9,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Action helper builder
+ */
 public class ActionsBuilder<E extends LivingEntity> {
 
-    private final List<ActionBuilder.Action<E>> actions = new ArrayList<>();
+    private final List<Action<E>> actions = new ArrayList<>();
     private Supplier<Integer> cooldownSupplier = () -> 20;
 
     public ActionsBuilder() {
     }
 
-    public List<ActionBuilder.Action<E>> actions() {
+    public List<Action<E>> actions() {
         return Collections.unmodifiableList(actions);
     }
 

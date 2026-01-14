@@ -3,48 +3,50 @@ package de.teamlapen.vampirism.common.world.entity.ai.activities.actions;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
-import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Unit;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnknownNullability;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ActionBuilder<E extends LivingEntity> {
+
+    //<editor-fold desc="Attributes">
 
     private final Activity activity;
     private final Supplier<Integer> cooldownSupplier;
     private final Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements = new HashSet<>();
     private final List<BehaviorControl<? super E>> behaviors = new ArrayList<>();
-    @Nullable
-    private BehaviorControl<? super E> lastBehavior;
     private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     @UnknownNullability
     private MemoryModuleType<Unit> activeMemory;
-    @UnknownNullability
-    private Cooldown cooldown;
+    private Action.@UnknownNullability Cooldown cooldown;
     private BiPredicate<ServerLevel, E> canActivate = (a,b) -> true;
     private int startPriority = 10;
+
+    //</editor-fold>
+
+    //<editor-fold desc="Constructors">
 
     public ActionBuilder(Activity activity, Supplier<Integer> cooldownSupplier) {
         this.activity = activity;
         this.cooldownSupplier = cooldownSupplier;
     }
+
+    //</editor-fold>
 
     //<editor-fold desc="Requirements">
 
@@ -68,13 +70,6 @@ public class ActionBuilder<E extends LivingEntity> {
 
     public ActionBuilder<E> add(BehaviorControl<? super E> control, Set<? extends SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
         this.behaviors.add(control);
-        this.sensors.addAll(sensors);
-        this.memories.addAll(memories);
-        return this;
-    }
-
-    public ActionBuilder<E> addLast(BehaviorControl<? super E> control, Set<? extends SensorType<? extends Sensor<? super E>>> sensors, Set<MemoryModuleType<?>> memories) {
-        this.lastBehavior = control;
         this.sensors.addAll(sensors);
         this.memories.addAll(memories);
         return this;
@@ -114,7 +109,7 @@ public class ActionBuilder<E extends LivingEntity> {
     }
 
     public ActionBuilder<E> cooldown(MemoryModuleType<Unit> cooldownMemory, Supplier<Integer> cooldown) {
-        this.cooldown = new Cooldown(cooldownMemory, cooldown);
+        this.cooldown = new Action.Cooldown(cooldownMemory, cooldown);
         this.memories.add(cooldownMemory);
         return this;
     }
@@ -134,78 +129,20 @@ public class ActionBuilder<E extends LivingEntity> {
 
     //</editor-fold>
 
-    Action<E> build() {
+    //<editor-fold desc="Builder">
+
+    public Action<E> build() {
         Preconditions.checkNotNull(this.activeMemory, "No active memory defined");
         Preconditions.checkNotNull(this.cooldown, "No cooldown memory defined");
-        Preconditions.checkNotNull(this.lastBehavior, "No last behavior defined");
+        Preconditions.checkState(!this.behaviors.isEmpty(), "No behaviors defined");
 
-        this.behaviors.add(new LastBehavior<>(this.lastBehavior, this.activeMemory, this.cooldown, this.cooldownSupplier));
+        // wrap last behavior
+        BehaviorControl<? super E> wrapped = new LastActionBehavior<>(this.behaviors.removeLast(), this.activeMemory, this.cooldown, this.cooldownSupplier);
+        this.behaviors.addLast(wrapped);
+
         return new Action<>(activity, sensors, memories, activeMemory, cooldown, requirements, canActivate, buildBehaviors());
     }
 
-    public record Action<E extends LivingEntity>(
-            Activity activity,
-            Collection<SensorType<? extends Sensor<? super E>>> sensors,
-            Collection<MemoryModuleType<?>> memories,
-            MemoryModuleType<Unit> activeMemory,
-            Cooldown cooldownMemory,
-            Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements,
-            BiPredicate<ServerLevel, E> precondition,
-            ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviors
-    ) {
-        public void register(Brain<E> brain, Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements) {
-            Stream<Stream<Pair<MemoryModuleType<?>, MemoryStatus>>> stream = Stream.of(requirements.stream(), this.requirements.stream(), Stream.of(Pair.of(activeMemory, MemoryStatus.VALUE_PRESENT), Pair.of(cooldownMemory.memory, MemoryStatus.VALUE_ABSENT)));
-            brain.addActivityWithConditions(this.activity, this.behaviors, stream.flatMap(x -> x).collect(Collectors.toUnmodifiableSet()));
-        }
+    //</editor-fold>
 
-    }
-
-    record Cooldown(MemoryModuleType<Unit> memory, Supplier<Integer> cooldownSupplier) {
-        public int cooldown() {
-            return this.cooldownSupplier.get();
-        }
-    }
-
-    private record LastBehavior<E extends LivingEntity>(BehaviorControl<E> original,
-                                                        MemoryModuleType<Unit> activeMemory,
-                                                        Cooldown cooldownMemory,
-                                                        Supplier<Integer> cooldownSupplier) implements BehaviorControl<E> {
-
-        @Override
-            public Behavior.Status getStatus() {
-                return this.original.getStatus();
-            }
-
-            @Override
-            public boolean tryStart(ServerLevel level, E entity, long gameTime) {
-                return this.original.tryStart(level, entity, gameTime);
-            }
-
-            @Override
-            public void tickOrStop(ServerLevel level, E entity, long gameTime) {
-                this.original.tickOrStop(level, entity, gameTime);
-                if (this.original.getStatus() == Behavior.Status.STOPPED) {
-                    stopAction(entity);
-                }
-            }
-
-            @Override
-            public void doStop(ServerLevel level, E entity, long gameTime) {
-                this.original.doStop(level, entity, gameTime);
-                stopAction(entity);
-            }
-
-            private void stopAction(E entity) {
-                Brain<?> brain = entity.getBrain();
-                brain.eraseMemory(activeMemory);
-                brain.eraseMemory(ModMemoryTypes.ACTION_ACTIVE.get());
-                brain.setMemoryWithExpiry(cooldownMemory.memory, Unit.INSTANCE, cooldownMemory.cooldown());
-                brain.setMemoryWithExpiry(ModMemoryTypes.ACTION_COOLDOWN.get(), Unit.INSTANCE, cooldownSupplier.get());
-            }
-
-            @Override
-            public String debugString() {
-                return this.original.debugString();
-            }
-        }
 }

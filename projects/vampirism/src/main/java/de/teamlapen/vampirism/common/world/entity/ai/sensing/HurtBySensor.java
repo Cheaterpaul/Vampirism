@@ -12,6 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Hurt by sensor for managing {@link de.teamlapen.vampirism.common.core.ModMemoryTypes#HURT_BY_ENTITIES} ({@link de.teamlapen.vampirism.common.world.entity.ai.memory.HurtByEntities})
+ * <p>
+ * This sensor removes outdated entries in the memory, it does not add new entries. For that update the memory in the {@link net.minecraft.world.entity.Entity#hurtServer(net.minecraft.server.level.ServerLevel, net.minecraft.world.damagesource.DamageSource, float)}
+ * <pre>
+ * HurtByEntities hurtByEntities = getBrain().getMemory(ModMemoryTypes.HURT_BY_ENTITIES.get()).orElseGet(HurtByEntities::empty);
+ * getBrain().setMemory(ModMemoryTypes.HURT_BY_ENTITIES.get(), hurtByEntities.hurtBy(level,this, source));
+ * </pre>
+ */
 public class HurtBySensor extends Sensor<LivingEntity> {
     @Override
     protected void doTick(ServerLevel level, LivingEntity entity) {

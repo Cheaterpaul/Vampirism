@@ -8,8 +8,6 @@ import net.minecraft.util.StringRepresentable;
 import net.neoforged.neoforge.network.codec.NeoForgeStreamCodecs;
 
 public enum DraculaState implements StringRepresentable {
-
-
     DEFAULT("default", FightStage.PHASE_1),
     PASSIVE("passive", FightStage.PHASE_1),
     TRANSFORMING_TO_RANGED("transform_to_ranged", FightStage.PHASE_2,true, 5*20),

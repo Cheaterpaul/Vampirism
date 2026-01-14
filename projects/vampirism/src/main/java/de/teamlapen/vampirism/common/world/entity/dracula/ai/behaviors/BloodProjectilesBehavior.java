@@ -20,7 +20,7 @@ public class BloodProjectilesBehavior extends Behavior<Dracula> {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE)
                 .cooldown(ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN, () -> 30 * 20)
-                .addLast(BloodProjectilesBehavior.create(), Set.of(), Set.of(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get(), ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN.get()))
+                .add(BloodProjectilesBehavior.create(), Set.of(), Set.of(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get(), ModMemoryTypes.BLOOD_PROJECTILES_COOLDOWN.get()))
                 .canActivate((level, dracula) -> {
                     float healthPercent = dracula.getHealth() / dracula.getMaxHealth();
                     return healthPercent >= 0.4f && healthPercent <= 0.8f;

@@ -21,7 +21,7 @@ public class SummonVampireBats {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.SUMMON_VAMPIRE_BATS_ACTIVE)
                 .cooldown(ModMemoryTypes.SUMMON_VAMPIRE_BATS_COOLDOWN, () -> 20 * 20)
-                .addLast(SummonVampireBats.create(), SummonVampireBats.sensors(), SummonVampireBats.memories())
+                .add(SummonVampireBats.create(), SummonVampireBats.sensors(), SummonVampireBats.memories())
                 .canActivate((level, dracula) -> dracula.getHealth() < (dracula.getMaxHealth() * 0.7));
     }
 

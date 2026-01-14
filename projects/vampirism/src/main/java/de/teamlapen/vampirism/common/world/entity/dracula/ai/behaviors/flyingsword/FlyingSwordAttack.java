@@ -30,7 +30,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 .cooldown(ModMemoryTypes.FLYING_SWORD_COOLDOWN, () -> 5 * 20)
                 .add(EquipSword.create(), EquipSword.sensors(), EquipSword.memories())
                 .add(FlyingSwordAttack.create(), FlyingSwordAttack.sensors(), FlyingSwordAttack.memories())
-                .addLast(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories());
+                .add(UnEquipSword.create(), UnEquipSword.sensors(), UnEquipSword.memories());
     }
 
     private Phase phase = Phase.CHANNELING;

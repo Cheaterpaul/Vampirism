@@ -4,10 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBehavior;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionsBuilder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -25,18 +23,33 @@ import java.util.stream.Stream;
 
 public class ActivityBuilder<E extends LivingEntity> {
 
+    //<editor-fold desc="Attributes">
+
+    /** Activity of the builder */
     private final Activity activity;
+    /** Requirements for the activity */
     private final Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements = new HashSet<>();
+    /** Behaviors of the activity */
     private final List<BehaviorControl<? super E>> behaviors = new ArrayList<>();
+    /** Required sensors for the activity */
     private final Set<SensorType<? extends Sensor<? super E>>> sensors = new HashSet<>();
+    /** Required memories for the activity */
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
+    /** Subaction builder */
     private final ActionsBuilder<E> actionBuilders = new ActionsBuilder<>();
 
+    /** Start priority of the activities behaviors */
     private int startPriority = 20;
+
+    //</editor-fold>
+
+    //<editor-fold desc="Constructors">
 
     public ActivityBuilder(Activity activity) {
         this.activity = activity;
     }
+
+    //</editor-fold>
 
     //<editor-fold desc="Requirements">
 
@@ -91,7 +104,7 @@ public class ActivityBuilder<E extends LivingEntity> {
     }
 
     public ActivityBuilder<E> add(BehaviorDescription<E> consumer) {
-        this.behaviors.add(consumer.control());
+        this.behaviors.add(consumer.behavior());
         this.sensors.addAll(consumer.sensors());
         this.memories.addAll(consumer.memories());
         return this;
@@ -115,6 +128,8 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     //</editor-fold>
 
+    //<editor-fold desc="Builder">
+
     public ActivityEntry<E> build() {
         return new ActivityEntry<>(this.activity,
                 Stream.concat(this.actionBuilders.actions().stream().flatMap(x -> x.sensors().stream()), this.sensors.stream()).collect(Collectors.toSet()),
@@ -125,23 +140,6 @@ public class ActivityBuilder<E extends LivingEntity> {
         );
     }
 
-    public record ActivityEntry<E extends LivingEntity>(
-            Activity activity,
-            Set<SensorType<? extends Sensor<? super E>>> sensors,
-            Set<MemoryModuleType<?>> memories,
-            Set<Pair<MemoryModuleType<?>, MemoryStatus>> requirements,
-            ImmutableList<? extends Pair<Integer, ? extends BehaviorControl<? super E>>> behaviors,
-            List<ActionBuilder.Action<E>> actions
-    ) {
-        public void register(Brain<E> brain) {
-            brain.addActivityWithConditions(this.activity, this.behaviors, this.requirements);
-            for (ActionBuilder.Action<E> actionBuilder : this.actions) {
-                actionBuilder.register(brain, this.requirements);
-            }
-        }
+    //</editor-fold>
 
-        public Stream<Activity> activities() {
-            return Stream.concat(this.actions.stream().map(ActionBuilder.Action::activity), Stream.of(this.activity));
-        }
-    }
 }

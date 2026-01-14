@@ -12,6 +12,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Memory module for tracking entities that have hurt the entity
+ */
 public class HurtByEntities {
 
     private static final HurtByEntities EMPTY = new HurtByEntities();

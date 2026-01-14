@@ -28,7 +28,7 @@ public class SummonProtectorsBehavior {
     public static void configure(ActionBuilder<Dracula> builder) {
         builder.activeMemory(ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE)
                 .cooldown(ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN, () -> 20 * 20)
-                .addLast(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
+                .add(SummonProtectorsBehavior.create(), SummonProtectorsBehavior.sensors(), SummonProtectorsBehavior.memories())
                 .canActivate((level, dracula) -> dracula.getBrain().getMemory(ModMemoryTypes.SUMMONS.get()).map(List::size).orElse(0) < SummonProtectorsBehavior.MAX_SUMMONS * 0.7);
     }
 
