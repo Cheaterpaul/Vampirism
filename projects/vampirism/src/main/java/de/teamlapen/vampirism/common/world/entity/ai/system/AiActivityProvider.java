@@ -2,6 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.ai.system;
 
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityBuilder;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.ActivityEntry;
+import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.Action;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -9,7 +10,8 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -50,6 +52,10 @@ public abstract class AiActivityProvider<E extends LivingEntity> {
 
     public Activity getActivity() {
         return this.activity;
+    }
+
+    public Collection<Action<E>> getActions() {
+        return this.activityEntry.actions();
     }
 
     public Stream<Activity> allActivities() {

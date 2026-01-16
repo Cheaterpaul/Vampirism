@@ -1,6 +1,7 @@
 package de.teamlapen.vampirism.common.world.entity.ai.activities.actions;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.ArrayList;
@@ -16,8 +17,10 @@ public class ActionsBuilder<E extends LivingEntity> {
 
     private final List<Action<E>> actions = new ArrayList<>();
     private Supplier<Integer> cooldownSupplier = () -> 20;
+    private final List<BehaviorControl<? super E>> behaviors;
 
-    public ActionsBuilder() {
+    public ActionsBuilder(List<BehaviorControl<? super E>> behaviors) {
+        this.behaviors = behaviors;
     }
 
     public List<Action<E>> actions() {
@@ -27,6 +30,7 @@ public class ActionsBuilder<E extends LivingEntity> {
     public void addAction(Activity activity, Consumer<ActionBuilder<E>> consumer) {
         ActionBuilder<E> builder = new ActionBuilder<>(activity, this.cooldownSupplier);
         consumer.accept(builder);
+        this.behaviors.forEach(builder::add);
         this.actions.add(builder.build());
     }
 

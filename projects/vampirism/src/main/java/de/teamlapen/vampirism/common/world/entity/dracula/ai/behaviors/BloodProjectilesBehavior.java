@@ -78,10 +78,6 @@ public class BloodProjectilesBehavior extends Behavior<Dracula> {
                 }
             }
         }
-
-        if (ticks > 115) {
-            entity.getBrain().eraseMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get());
-        }
     }
 
     @Override
@@ -91,7 +87,6 @@ public class BloodProjectilesBehavior extends Behavior<Dracula> {
 
     @Override
     protected void stop(ServerLevel level, Dracula entity, long gameTime) {
-        entity.getBrain().eraseMemory(ModMemoryTypes.BLOOD_PROJECTILES_ACTIVE.get());
         this.spawnedProjectiles.clear();
     }
 }

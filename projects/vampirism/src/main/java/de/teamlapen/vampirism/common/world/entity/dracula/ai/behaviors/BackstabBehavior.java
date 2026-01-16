@@ -24,11 +24,12 @@ public class BackstabBehavior extends Behavior<Dracula> {
         builder.activeMemory(ModMemoryTypes.BACKSTAB_ACTIVE)
                 .cooldown(ModMemoryTypes.BACKSTAB_COOLDOWN, () -> 15 * 20)
                 .add(BackstabBehavior.create(), BackstabBehavior.sensors(), BackstabBehavior.memories())
+                .requires(ModMemoryTypes.HURT_BY_ENTITIES, MemoryStatus.VALUE_PRESENT)
                 .canActivate((level, dracula) -> dracula.getBrain().hasMemoryValue(ModMemoryTypes.HURT_BY_ENTITIES.get()));
     }
 
     private static Set<SensorType<? extends Sensor<? super Dracula>>> sensors() {
-        return Set.of(ModSensors.NEAREST_TARGETABLE_ENTITIES.get(), SensorType.NEAREST_LIVING_ENTITIES);
+        return Set.of(ModSensors.NEAREST_TARGETABLE_ENTITIES.get(), SensorType.NEAREST_LIVING_ENTITIES, ModSensors.HURT_BY.get());
     }
 
     private static Set<MemoryModuleType<?>> memories() {

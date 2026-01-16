@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  * @param cooldownSupplier The supplier for the cross-action cooldown duration
  * @param <E>              The entity type
  */
-record LastActionBehavior<E extends LivingEntity>(BehaviorControl<E> original,
+public record LastActionBehavior<E extends LivingEntity>(BehaviorControl<E> original,
                                                   MemoryModuleType<Unit> activeMemory,
                                                   Action.Cooldown cooldownMemory,
                                                   Supplier<Integer> cooldownSupplier) implements BehaviorControl<E> {

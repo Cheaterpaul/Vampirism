@@ -3,7 +3,7 @@ package de.teamlapen.vampirism.common.world.entity.ai.activities;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
-import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBehavior;
+import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionsBuilder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,7 +37,7 @@ public class ActivityBuilder<E extends LivingEntity> {
     /** Required memories for the activity */
     private final Set<MemoryModuleType<?>> memories = new HashSet<>();
     /** Subaction builder */
-    private final ActionsBuilder<E> actionBuilders = new ActionsBuilder<>();
+    private final ActionsBuilder<E> actionBuilders = new ActionsBuilder<>(this.behaviors);
 
     /** Start priority of the activities behaviors */
     private int startPriority = 20;
@@ -76,16 +77,20 @@ public class ActivityBuilder<E extends LivingEntity> {
 
     //<editor-fold desc="Actions">
 
-    public ActionsBuilder<E> useActions(Supplier<Integer> cooldownSupplier) {
+    public ActionsBuilder<E> useActions(@Nullable Supplier<Integer> cooldownSupplier) {
         this.memories.add(ModMemoryTypes.ACTION_ACTIVE.get());
         this.memories.add(ModMemoryTypes.ACTION_COOLDOWN.get());
-        return this.actionBuilders.cooldown(cooldownSupplier);
+        this.sensors.add(ModSensors.ACTION_SENSOR.get());
+
+        if (cooldownSupplier != null) {
+            this.actionBuilders.cooldown(cooldownSupplier);
+        }
+
+        return this.actionBuilders;
     }
 
     public ActionsBuilder<E> useActions() {
-        this.memories.add(ModMemoryTypes.ACTION_ACTIVE.get());
-        this.memories.add(ModMemoryTypes.ACTION_COOLDOWN.get());
-        return this.actionBuilders;
+        return this.useActions(null);
     }
 
     //</editor-fold>
@@ -114,10 +119,6 @@ public class ActivityBuilder<E extends LivingEntity> {
         ImmutableList.Builder<Pair<Integer, ? extends BehaviorControl<? super E>>> builder = ImmutableList.builder();
 
         int priority = this.startPriority;
-
-        if (!this.actionBuilders.actions().isEmpty()) {
-            builder.add(Pair.of(priority++, new ActionBehavior<>(this.actionBuilders.actions())));
-        }
 
         for (BehaviorControl<? super E> behavior : behaviors) {
             builder.add(Pair.of(priority++, behavior));

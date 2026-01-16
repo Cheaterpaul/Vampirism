@@ -1,5 +1,6 @@
 package de.teamlapen.vampirism.common.world.entity.dracula.ai.behaviors;
 
+import com.mojang.datafixers.kinds.OptionalBox;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
@@ -13,15 +14,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.OneShot;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class SummonProtectorsBehavior {
 
@@ -40,7 +39,8 @@ public class SummonProtectorsBehavior {
         return Set.of(
                 ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN.get(),
                 ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE.get(),
-                ModMemoryTypes.SUMMONS.get()
+                ModMemoryTypes.SUMMONS.get(),
+                ModMemoryTypes.ALLIES.get()
         );
     }
 
@@ -51,8 +51,9 @@ public class SummonProtectorsBehavior {
                 inst -> inst.group(
                         inst.absent(ModMemoryTypes.SUMMON_PROTECTOR_COOLDOWN.get()),
                         inst.present(ModMemoryTypes.SUMMON_PROTECTOR_ACTIVE.get()),
-                        inst.registered(ModMemoryTypes.SUMMONS.get())
-                ).apply(inst, (used, using, summons) ->
+                        inst.registered(ModMemoryTypes.SUMMONS.get()),
+                        inst.registered(ModMemoryTypes.ALLIES.get())
+                ).apply(inst, (used, using, summons, allies) ->
                         ((level, dracula, gameTime) -> {
                             Brain<Dracula> brain = dracula.getBrain();
                             List<UUID> uuids = brain.getMemory(ModMemoryTypes.SUMMONS.get()).orElseGet(List::of);
@@ -72,10 +73,17 @@ public class SummonProtectorsBehavior {
                                 spawned++;
                             }
                             summons.set(entities.stream().map(Entity::getUUID).toList());
+                            addAllies(entities, inst, allies);
                             return true;
                         })
 
                 ));
+    }
+
+    private static void addAllies(List<LivingEntity> entities, BehaviorBuilder.Instance<Dracula> inst, MemoryAccessor<OptionalBox.Mu, Set<UUID>> allies) {
+        var uuids = inst.tryGet(allies).map(HashSet::new).orElseGet(HashSet::new);
+        uuids.addAll(entities.stream().map(Entity::getUUID).toList());
+        allies.set(uuids);
     }
 
 
@@ -89,6 +97,7 @@ public class SummonProtectorsBehavior {
 //            if (level.noCollision(basicVampireEntity)) {
                 level.addFreshEntity(basicVampireEntity);
 //            }
+            basicVampireEntity.setAdvancedLeader(dracula);
         }
         return basicVampireEntity;
     }

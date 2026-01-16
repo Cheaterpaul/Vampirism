@@ -2,7 +2,9 @@ package de.teamlapen.vampirism.common.core;
 
 import com.mojang.serialization.Codec;
 import de.teamlapen.vampirism.REFERENCE;
+import de.teamlapen.vampirism.common.util.serialization.ModCodecs;
 import de.teamlapen.vampirism.common.world.entity.ai.memory.HurtByEntities;
+import de.teamlapen.vampirism.common.world.entity.ai.system.AiSystem;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.Unit;
@@ -15,6 +17,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class ModMemoryTypes {
@@ -24,6 +27,9 @@ public class ModMemoryTypes {
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> ACTION_ACTIVE = unit("action.active");
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> ACTION_COOLDOWN = unit("action.cooldown");
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<HurtByEntities>> HURT_BY_ENTITIES = MEMORY_MODULES.register("hurt_by_entities", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Set<UUID>>> ALLIES = MEMORY_MODULES.register("allies", () -> new MemoryModuleType<>(Optional.of(ModCodecs.set(UUIDUtil.CODEC))));
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<AiSystem<?>>> AI_SYSTEM = MEMORY_MODULES.register("ai_system", () -> new MemoryModuleType<>(Optional.empty()));
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Long>> ACTION_ACTIVE_SINCE = longInt("action.active_since");
 
     //<editor-fold desc="Dracula">
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> DRACULA_PHASE_1 = unit("dracula.phase1");

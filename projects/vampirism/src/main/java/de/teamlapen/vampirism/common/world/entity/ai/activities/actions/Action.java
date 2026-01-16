@@ -47,7 +47,7 @@ public record Action<E extends LivingEntity>(
         brain.addActivityWithConditions(this.activity, this.behaviors, stream.flatMap(x -> x).collect(Collectors.toUnmodifiableSet()));
     }
 
-    record Cooldown(MemoryModuleType<Unit> memory, Supplier<Integer> cooldownSupplier) {
+    public record Cooldown(MemoryModuleType<Unit> memory, Supplier<Integer> cooldownSupplier) {
         public int cooldown() {
             return this.cooldownSupplier.get();
         }

@@ -2,6 +2,7 @@ package de.teamlapen.vampirism.common.world.entity.dracula;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import de.teamlapen.faction.api.world.entities.IEntityLeader;
 import de.teamlapen.vampirism.common.core.ModAttachments;
 import de.teamlapen.vampirism.common.core.ModEntities;
 import de.teamlapen.vampirism.common.core.ModMemoryTypes;
@@ -34,7 +35,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations {
+public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations, IEntityLeader {
 
     public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
 
@@ -228,7 +229,8 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
                 .add(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE, createKnockbackResistance(FightStage.NONE))
                 .add(Attributes.BURNING_TIME, 0.1f)
                 .add(Attributes.ARMOR, createArmor(FightStage.NONE))
-                .add(Attributes.ARMOR_TOUGHNESS, createArmorToughness(FightStage.NONE));
+                .add(Attributes.ARMOR_TOUGHNESS, createArmorToughness(FightStage.NONE))
+                .add(Attributes.FOLLOW_RANGE, 32);
     }
 
     //</editor-fold>
@@ -462,7 +464,7 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
 
         if (this.getState() == DraculaState.RAGED) {
             this.recentDamage.add(Pair.of(level.getGameTime(), amount));
-            this.checkMistFormTrigger();
+//            this.checkMistFormTrigger();
         }
         updateEvent();
     }
@@ -488,6 +490,35 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
             serverLevel.getData(ModAttachments.DRACULA_FIGHT_DATA.get()).getEvent().clear();
         }
     }
+
+    //</editor-fold>
+
+    //<editor-fold desc="Entity Leader">
+
+    @Override
+    public void decreaseFollowerCount() {
+    }
+
+    @Override
+    public int getFollowingCount() {
+        return 0;
+    }
+
+    @Override
+    public int getMaxFollowerCount() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public boolean increaseFollowerCount() {
+        return true;
+    }
+
+    @Override
+    public LivingEntity asEntity() {
+        return this;
+    }
+
 
     //</editor-fold>
 }

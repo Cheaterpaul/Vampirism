@@ -41,6 +41,9 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
 
     private void updateMemories(Dracula entity) {
         Brain<Dracula> brain = entity.getBrain();
+        if (!brain.hasMemoryValue(ModMemoryTypes.AI_SYSTEM.get())) {
+            brain.setMemory(ModMemoryTypes.AI_SYSTEM.get(), this);
+        }
         Set<MemoryModuleType<Unit>> stageMemories = Stream.of(ModMemoryTypes.DRACULA_PHASE_1.get(), ModMemoryTypes.DRACULA_PHASE_2.get(), ModMemoryTypes.DRACULA_PHASE_3.get()).collect(Collectors.toSet());
         MemoryModuleType<Unit> unitMemoryModuleType = memoryForStage(entity.getState());
 

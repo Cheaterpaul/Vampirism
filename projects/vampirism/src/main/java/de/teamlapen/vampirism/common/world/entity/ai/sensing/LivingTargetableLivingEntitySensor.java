@@ -8,8 +8,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class LivingTargetableLivingEntitySensor<T extends LivingEntity> extends Sensor<T> {
 
@@ -21,11 +20,17 @@ public class LivingTargetableLivingEntitySensor<T extends LivingEntity> extends 
     @Override
     protected void doTick(ServerLevel level, T entity) {
         Brain<?> brain = entity.getBrain();
-        var entities = brain.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).orElseGet(List::of);
+        var entities = brain.getMemory(MemoryModuleType.NEAREST_LIVING_ENTITIES).stream().flatMap(Collection::stream);
+
+        Optional<Set<UUID>> allies = brain.getMemory(ModMemoryTypes.ALLIES.get());
+        if (allies.isPresent()) {
+            entities = entities.filter(x -> !allies.get().contains(x.getUUID()));
+        }
 
         // the list is already sorted by distance
-        List<LivingEntity> list = entities.stream().filter(x -> isAttackable(level, entity, x)).toList();
+        entities = entities.filter(x -> isAttackable(level, entity, x));
 
+        List<LivingEntity> list = entities.toList();
         brain.setMemory(ModMemoryTypes.NEAREST_ATTACKABLE.get(), list);
         brain.setMemory(ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), new NearestVisibleLivingEntities(level, entity, list));
     }
