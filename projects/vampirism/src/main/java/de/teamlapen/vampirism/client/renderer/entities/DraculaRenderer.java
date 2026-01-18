@@ -3,14 +3,13 @@ package de.teamlapen.vampirism.client.renderer.entities;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import de.teamlapen.vampirism.client.core.ModEntityRenderStates;
-import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase1Model;
+import de.teamlapen.vampirism.client.models.entities.dracula.DraculaModel;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -34,9 +33,10 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
     private final Map<FightStage, List<GeoRenderLayer<Dracula, Void, RenderState>>> layers = Util.makeEnumMap(FightStage.class, stage -> new ArrayList<>());
 
     public DraculaRenderer(EntityRendererProvider.Context context) {
-        super(context, new DraculaPhase1Model());
+        super(context, new DraculaModel());
         withRenderLayer(new FormRenderLayer(FightStage.PHASE_2, new Hand()));
     }
+
 
     @Override
     public void addRenderData(Dracula animatable, @Nullable Void relatedObject, RenderState renderState, float partialTick) {
@@ -119,11 +119,6 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
                 //noinspection OverrideOnly
                 this.parent.addRenderData(animatable, relatedObject, renderState, partialTick);
             }
-        }
-
-        @Override
-        protected Identifier getTextureResource(RenderState renderState) {
-            return this.renderer.getTextureLocation(renderState);
         }
     }
 }
