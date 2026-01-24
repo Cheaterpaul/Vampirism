@@ -10,6 +10,7 @@ import de.teamlapen.vampirism.common.world.entity.ai.memory.HurtByEntities;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaAiSystem;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -38,8 +39,8 @@ import java.util.List;
 public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations, IEntityLeader {
 
     public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
+    public static final EntityDataAccessor<Long> TRANSFORMATION_START = SynchedEntityData.defineId(Dracula.class, EntityDataSerializers.LONG);
 
-    private long transformationStart;
     private final List<Pair<Long, Float>> recentDamage = new ArrayList<>();
     private long mistStartTime = -1;
     private static final int MIST_DURATION = 5 * 20;
@@ -126,6 +127,14 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
         return this.getState().isTransforming;
     }
 
+    public long getTransformationStart() {
+        return this.entityData.get(TRANSFORMATION_START);
+    }
+
+    private void setTransformationStart(long transformationStart) {
+        this.entityData.set(TRANSFORMATION_START, transformationStart);
+    }
+
     public DraculaState getState() {
         return this.entityData.get(FIGHT_STAGE);
     }
@@ -137,6 +146,7 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(FIGHT_STAGE, DraculaState.DEFAULT);
+        builder.define(TRANSFORMATION_START, -1L);
     }
 
     //</editor-fold>
@@ -269,6 +279,13 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
             }
             return PlayState.STOP;
         }));
+        controllers.add(new AnimationController<>("Transformation", test -> {
+            DraculaState state = Dracula.this.getState();
+            if (state.isTransforming) {
+                return test.setAndContinue(state.stage == FightStage.PHASE_3 ? IDraculaAnimations.PHASE_3_TRANSFORMATION : IDraculaAnimations.PHASE_2_TRANSFORMATION);
+            }
+            return PlayState.STOP;
+        }));
         controllers.add(new AnimationController<>("TriggerAttack", test -> PlayState.STOP)
                 .triggerableAnim(Animation.NEEDLE_1.id(), Animation.NEEDLE_1.animation)
                 .triggerableAnim(Animation.NEEDLE_2.id(), Animation.NEEDLE_2.animation)
@@ -302,15 +319,15 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
         setState(input.read("fight_stage", DraculaState.CODEC).orElse(DraculaState.DEFAULT));
-        this.transformationStart = input.getLongOr("transformation_start", -1);
+        setTransformationStart(input.getLongOr("transformation_start", -1));
     }
 
     @Override
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.store("fight_stage", DraculaState.CODEC, getState());
-        if (this.transformationStart != -1) {
-            output.putLong("transformation_start", this.transformationStart);
+        if (getTransformationStart() != -1) {
+            output.putLong("transformation_start", getTransformationStart());
         }
     }
 
@@ -358,7 +375,7 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
         if (!this.isTransforming() || !(this.level() instanceof ServerLevel serverLevel)) return;
 
 
-        var percentage = ((serverLevel.getGameTime() - this.transformationStart) / (float) getState().transformTime);
+        var percentage = ((serverLevel.getGameTime() - getTransformationStart()) / (float) getState().transformTime);
 
 
         setHealth(Math.max(1, getMaxHealth() * percentage));
@@ -376,7 +393,7 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
             default -> throw new IllegalStateException("Unexpected value: " + this.getStage());
         };
         this.setState(stage);
-        this.transformationStart = -1;
+        this.setTransformationStart(-1);
 
         knockbackEntities();
     }
@@ -398,7 +415,7 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
             default -> throw new IllegalStateException("Unexpected value: " + this.getStage());
         };
 
-        this.transformationStart = this.level().getGameTime();
+        this.setTransformationStart(this.level().getGameTime());
         this.setState(nextStage);
         updateAttributes(getStage());
         if (level() instanceof ServerLevel serverLevel) {

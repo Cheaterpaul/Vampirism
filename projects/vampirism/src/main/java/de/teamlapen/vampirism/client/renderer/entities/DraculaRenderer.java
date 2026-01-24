@@ -8,6 +8,7 @@ import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.util.Util;
@@ -35,6 +36,7 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
     public DraculaRenderer(EntityRendererProvider.Context context) {
         super(context, new DraculaModel());
         withRenderLayer(new FormRenderLayer(FightStage.PHASE_2, new Hand()));
+        withRenderLayer(new TransitionLayer());
     }
 
 
@@ -43,7 +45,13 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
         var state = animatable.getState();
 
         renderState.addGeckolibData(ModEntityRenderStates.DRACULA_STAGE, state.stage);
-
+        renderState.addGeckolibData(ModEntityRenderStates.DRACULA_TRANSFORMING, state.isTransforming);
+        if (state.isTransforming) {
+            float progress = (animatable.level().getGameTime() + partialTick - animatable.getTransformationStart()) / (float) state.transformTime;
+            renderState.addGeckolibData(ModEntityRenderStates.DRACULA_TRANSFORMATION_PROGRESS, Math.min(1, Math.max(0, progress)));
+        } else {
+            renderState.addGeckolibData(ModEntityRenderStates.DRACULA_TRANSFORMATION_PROGRESS, 0f);
+        }
     }
 
     public Map<FightStage, List<GeoRenderLayer<Dracula, Void, RenderState>>> getLayers() {
@@ -118,6 +126,36 @@ public class DraculaRenderer<RenderState extends LivingEntityRenderState & GeoRe
             if (renderState.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE) == this.stage) {
                 //noinspection OverrideOnly
                 this.parent.addRenderData(animatable, relatedObject, renderState, partialTick);
+            }
+        }
+    }
+
+    private class TransitionLayer extends GeoRenderLayer<Dracula, Void, RenderState> {
+
+        public TransitionLayer() {
+            super(DraculaRenderer.this);
+        }
+
+        @Override
+        public void submitRenderTask(RenderPassInfo<RenderState> renderPassInfo, SubmitNodeCollector renderTasks) {
+            RenderState state = renderPassInfo.renderState();
+            if (Boolean.TRUE.equals(state.getGeckolibData(ModEntityRenderStates.DRACULA_TRANSFORMING))) {
+                FightStage currentStage = state.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE);
+                FightStage previousStage = switch (currentStage) {
+                    case PHASE_2 -> FightStage.PHASE_1;
+                    case PHASE_3 -> FightStage.PHASE_2;
+                    default -> FightStage.NONE;
+                };
+
+                if (previousStage != FightStage.NONE && DraculaModel.RENDER_STAGE.get() == null) {
+                    try {
+                        DraculaModel.RENDER_STAGE.set(previousStage);
+                        //noinspection unchecked
+                        ((LivingEntityRenderer<Dracula, RenderState, ?>)getRenderer()).submit(renderPassInfo.renderState(), renderPassInfo.poseStack(), renderTasks, renderPassInfo.cameraState());
+                    } finally {
+                        DraculaModel.RENDER_STAGE.remove();
+                    }
+                }
             }
         }
     }

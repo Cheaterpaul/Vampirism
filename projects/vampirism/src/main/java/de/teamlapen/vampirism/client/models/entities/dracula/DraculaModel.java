@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class DraculaModel extends GeoModel<Dracula> {
 
+    public static final ThreadLocal<FightStage> RENDER_STAGE = new ThreadLocal<>();
     private static final Identifier PHASE1 = VIdentifier.mod("entity/dracula.phase1");
     private static final Identifier PHASE2 = VIdentifier.mod("entity/dracula.phase2");
     private static final Identifier PHASE3 = VIdentifier.mod("entity/dracula.phase3");
@@ -34,17 +35,29 @@ public class DraculaModel extends GeoModel<Dracula> {
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return this.models.get(renderState.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE)).getModelResource(renderState);
+        FightStage stage = RENDER_STAGE.get();
+        if (stage == null) {
+            stage = renderState.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE);
+        }
+        return this.models.get(stage).getModelResource(renderState);
     }
 
     @Override
     public Identifier getTextureResource(GeoRenderState renderState) {
-        return this.models.get(renderState.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE)).getTextureResource(renderState);
+        FightStage stage = RENDER_STAGE.get();
+        if (stage == null) {
+            stage = renderState.getGeckolibData(ModEntityRenderStates.DRACULA_STAGE);
+        }
+        return this.models.get(stage).getTextureResource(renderState);
     }
 
     @Override
     public Identifier getAnimationResource(Dracula animatable) {
-        return this.models.get(animatable.getStage()).getAnimationResource(animatable);
+        FightStage stage = RENDER_STAGE.get();
+        if (stage == null) {
+            stage = animatable.getStage();
+        }
+        return this.models.get(stage).getAnimationResource(animatable);
     }
 
     private static class PhaseModel extends GeoModel<Dracula> {

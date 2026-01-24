@@ -54,6 +54,8 @@ public class ModEntityRenderStates {
     public static final ContextKey<Boolean> VAMPIRE_DBNO = create("vampire/dbno");
     public static final ContextKey<Boolean> VAMPIRE_SLEEPING_IN_COFFIN = create("vampire/sleeping_in_coffin");
     public static final DataTicket<FightStage> DRACULA_STAGE = DataTicket.create(VIdentifier.modString("dracula/fight_stage"), FightStage.class);
+    public static final DataTicket<Boolean> DRACULA_TRANSFORMING = DataTicket.create(VIdentifier.modString("dracula/transforming"), Boolean.class);
+    public static final DataTicket<Float> DRACULA_TRANSFORMATION_PROGRESS = DataTicket.create(VIdentifier.modString("dracula/transformation_progress"), Float.class);
 
     private static <T> ContextKey<T> create(String id) {
         return new ContextKey<>(VIdentifier.mod(id));
