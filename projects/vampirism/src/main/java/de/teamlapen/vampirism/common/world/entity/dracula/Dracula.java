@@ -25,18 +25,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
-import software.bernie.geckolib.animatable.SingletonGeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.manager.AnimatableManager;
-import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.object.PlayState;
-import software.bernie.geckolib.constant.DefaultAnimations;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, IDraculaAnimations, IEntityLeader {
+public class Dracula extends PathfinderMob implements IDraculaAnimations, IEntityLeader {
 
     public static final EntityDataAccessor<DraculaState> FIGHT_STAGE = SynchedEntityData.defineId(Dracula.class, ModEntities.DRACULA_STATE.get());
     public static final EntityDataAccessor<Long> TRANSFORMATION_START = SynchedEntityData.defineId(Dracula.class, EntityDataSerializers.LONG);
@@ -47,7 +40,6 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
 
     public Dracula(EntityType<? extends Dracula> type, Level level) {
         super(type, level);
-        SingletonGeoAnimatable.registerSyncedAnimatable(this);
     }
 
     @Override
@@ -245,73 +237,73 @@ public class Dracula extends PathfinderMob implements SingletonGeoAnimatable, ID
 
     //</editor-fold>
 
-    //<editor-fold desc="Animation">
-
-    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
-
-    @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("Walk/Run/Idle", test -> {
-            if (Dracula.this.getState().isTransforming) {
-                return PlayState.STOP;
-            }
-            if (test.isMoving()) {
-                return test.setAndContinue(isSprinting() ? DefaultAnimations.RUN : DefaultAnimations.WALK);
-            }
-            return test.setAndContinue(DefaultAnimations.IDLE);
-        }));
-        controllers.add(new AnimationController<>("Attack", test -> {
-            DraculaState state = Dracula.this.getState();
-            if (state.isTransforming) {
-                return PlayState.STOP;
-            }
-            if (Dracula.this.swinging) {
-                return switch (state.stage) {
-                    case PHASE_3 -> {
-                        var animation = test.controller().getCurrentRawAnimation();
-                        if (animation == null) {
-                            animation = Dracula.this.random.nextBoolean() ? IDraculaAnimations.PHASE_3_ATTACK_1 : IDraculaAnimations.PHASE_3_ATTACK_2;
-                        }
-                        yield test.setAndContinue(animation);
-                    }
-                    default -> PlayState.STOP;
-                };
-            }
-            return PlayState.STOP;
-        }));
-        controllers.add(new AnimationController<>("Transformation", test -> {
-            DraculaState state = Dracula.this.getState();
-            if (state.isTransforming) {
-                return test.setAndContinue(state.stage == FightStage.PHASE_3 ? IDraculaAnimations.PHASE_3_TRANSFORMATION : IDraculaAnimations.PHASE_2_TRANSFORMATION);
-            }
-            return PlayState.STOP;
-        }));
-        controllers.add(new AnimationController<>("TriggerAttack", test -> PlayState.STOP)
-                .triggerableAnim(Animation.NEEDLE_1.id(), Animation.NEEDLE_1.animation)
-                .triggerableAnim(Animation.NEEDLE_2.id(), Animation.NEEDLE_2.animation)
-                .triggerableAnim(Animation.SWORD_1.id(), Animation.SWORD_1.animation)
-                .triggerableAnim(Animation.SWORD_2.id(), Animation.SWORD_2.animation)
-        );
-    }
-
-    public void triggerAnim(Animation... animations) {
-        if (animations.length == 0) {
-            return;
-        }
-        Animation animation = animations[this.random.nextInt(animations.length)];
-        if (getStage() != animation.stage) {
-            return;
-        }
-
-        triggerAnim(this, getId(), "TriggerAttack", animation.id());
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.geoCache;
-    }
-
-    //</editor-fold>
+//    //<editor-fold desc="Animation">
+//
+//    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+//
+//    @Override
+//    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+//        controllers.add(new AnimationController<>("Walk/Run/Idle", test -> {
+//            if (Dracula.this.getState().isTransforming) {
+//                return PlayState.STOP;
+//            }
+//            if (test.isMoving()) {
+//                return test.setAndContinue(isSprinting() ? DefaultAnimations.RUN : DefaultAnimations.WALK);
+//            }
+//            return test.setAndContinue(DefaultAnimations.IDLE);
+//        }));
+//        controllers.add(new AnimationController<>("Attack", test -> {
+//            DraculaState state = Dracula.this.getState();
+//            if (state.isTransforming) {
+//                return PlayState.STOP;
+//            }
+//            if (Dracula.this.swinging) {
+//                return switch (state.stage) {
+//                    case PHASE_3 -> {
+//                        var animation = test.controller().getCurrentRawAnimation();
+//                        if (animation == null) {
+//                            animation = Dracula.this.random.nextBoolean() ? IDraculaAnimations.PHASE_3_ATTACK_1 : IDraculaAnimations.PHASE_3_ATTACK_2;
+//                        }
+//                        yield test.setAndContinue(animation);
+//                    }
+//                    default -> PlayState.STOP;
+//                };
+//            }
+//            return PlayState.STOP;
+//        }));
+//        controllers.add(new AnimationController<>("Transformation", test -> {
+//            DraculaState state = Dracula.this.getState();
+//            if (state.isTransforming) {
+//                return test.setAndContinue(state.stage == FightStage.PHASE_3 ? IDraculaAnimations.PHASE_3_TRANSFORMATION : IDraculaAnimations.PHASE_2_TRANSFORMATION);
+//            }
+//            return PlayState.STOP;
+//        }));
+//        controllers.add(new AnimationController<>("TriggerAttack", test -> PlayState.STOP)
+//                .triggerableAnim(Animation.NEEDLE_1.id(), Animation.NEEDLE_1.animation)
+//                .triggerableAnim(Animation.NEEDLE_2.id(), Animation.NEEDLE_2.animation)
+//                .triggerableAnim(Animation.SWORD_1.id(), Animation.SWORD_1.animation)
+//                .triggerableAnim(Animation.SWORD_2.id(), Animation.SWORD_2.animation)
+//        );
+//    }
+//
+//    public void triggerAnim(Animation... animations) {
+//        if (animations.length == 0) {
+//            return;
+//        }
+//        Animation animation = animations[this.random.nextInt(animations.length)];
+//        if (getStage() != animation.stage) {
+//            return;
+//        }
+//
+//        triggerAnim(this, getId(), "TriggerAttack", animation.id());
+//    }
+//
+//    @Override
+//    public AnimatableInstanceCache getAnimatableInstanceCache() {
+//        return this.geoCache;
+//    }
+//
+//    //</editor-fold>
 
     //<editor-fold desc="Serialization">
 

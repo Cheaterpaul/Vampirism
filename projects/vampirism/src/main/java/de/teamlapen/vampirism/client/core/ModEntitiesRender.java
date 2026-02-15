@@ -4,9 +4,10 @@ import de.teamlapen.vampirism.api.util.VIdentifier;
 import de.teamlapen.vampirism.client.models.armor.*;
 import de.teamlapen.vampirism.client.models.blocks.CoffinModel;
 import de.teamlapen.vampirism.client.models.entities.*;
+import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase1Model;
+import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase2Model;
+import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase3Model;
 import de.teamlapen.vampirism.client.renderer.entities.*;
-import de.teamlapen.vampirism.client.renderer.entities.FlyingNeedleRenderer;
-import de.teamlapen.vampirism.client.renderer.entities.FlyingSwordRenderer;
 import de.teamlapen.vampirism.client.renderer.entities.layers.ConvertedVampireEntityLayer;
 import de.teamlapen.vampirism.client.renderer.entities.layers.VampirePlayerHeadLayer;
 import de.teamlapen.vampirism.common.core.ModEntities;
@@ -35,6 +36,9 @@ public class ModEntitiesRender {
     public static final ModelLayerLocation WING = new ModelLayerLocation(VIdentifier.mod("wing"), "main");
     public static final ModelLayerLocation BARON = new ModelLayerLocation(VIdentifier.mod("baron"), "main");
     public static final ModelLayerLocation BARONESS = new ModelLayerLocation(VIdentifier.mod("baroness"), "main");
+    public static final ModelLayerLocation DRACULA_PHASE_1 = new ModelLayerLocation(VIdentifier.mod("dracula/phase1"), "main");
+    public static final ModelLayerLocation DRACULA_PHASE_2 = new ModelLayerLocation(VIdentifier.mod("dracula/phase2"), "main");
+    public static final ModelLayerLocation DRACULA_PHASE_3 = new ModelLayerLocation(VIdentifier.mod("dracula/phase3"), "main");
     public static final ModelLayerLocation BARON_ATTIRE = new ModelLayerLocation(VIdentifier.mod("baron"), "attire");
     public static final ModelLayerLocation CLOAK = new ModelLayerLocation(VIdentifier.mod("cloak"), "main");
     public static final ModelLayerLocation BARONESS_ATTIRE = new ModelLayerLocation(VIdentifier.mod("baroness"), "attire");
@@ -129,6 +133,9 @@ public class ModEntitiesRender {
         event.registerLayerDefinition(DARK_SPRUCE_CHEST_BOAT, () -> chestBoatDefinition);
         event.registerLayerDefinition(CURSED_SPRUCE_BOAT, () -> boatDefinition);
         event.registerLayerDefinition(CURSED_SPRUCE_CHEST_BOAT, () -> chestBoatDefinition);
+        event.registerLayerDefinition(DRACULA_PHASE_1, DraculaPhase1Model::createBodyLayer);
+        event.registerLayerDefinition(DRACULA_PHASE_2, DraculaPhase2Model::createBodyLayer);
+        event.registerLayerDefinition(DRACULA_PHASE_3, DraculaPhase3Model::createBodyLayer);
     }
 
     public static void onAddLayers(EntityRenderersEvent.@NotNull AddLayers event) {

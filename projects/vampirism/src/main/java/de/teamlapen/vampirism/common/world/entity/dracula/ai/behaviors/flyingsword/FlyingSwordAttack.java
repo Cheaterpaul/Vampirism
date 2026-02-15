@@ -6,7 +6,6 @@ import de.teamlapen.vampirism.common.particles.FlyingBloodEntityParticleOptions;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
-import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -125,7 +124,7 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                     float damage = 5.0f + (targets.size() * 0.5f);
                     FlyingSwordEntity sword = new FlyingSwordEntity(level, entity, target, damage);
                     level.addFreshEntity(sword);
-                    entity.triggerAnim(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2);
+//                    entity.triggerAnim(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2); TODO animation
                     attacksDone++;
                 } else {
                     doStop(level, entity, gameTime);

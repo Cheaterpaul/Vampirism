@@ -18,14 +18,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoAnimatable;
-import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.animatable.manager.AnimatableManager;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.UUID;
 
-public class FlyingNeedleEntity extends Projectile implements GeoAnimatable {
+public class FlyingNeedleEntity extends Projectile {
 
     private static final EntityDataAccessor<Boolean> FLYING = SynchedEntityData.defineId(FlyingNeedleEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -190,19 +186,19 @@ public class FlyingNeedleEntity extends Projectile implements GeoAnimatable {
 
     //</editor-fold>
 
-    //<editor-fold desc="Animation">
-
-    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
-
-    @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.geoCache;
-    }
-
-    //</editor-fold>
+//    //<editor-fold desc="Animation">
+//
+//    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
+//
+//    @Override
+//    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
+//
+//    }
+//
+//    @Override
+//    public AnimatableInstanceCache getAnimatableInstanceCache() {
+//        return this.geoCache;
+//    }
+//
+//    //</editor-fold>
 }
