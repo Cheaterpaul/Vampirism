@@ -32,13 +32,7 @@ public record LastActionBehavior<E extends LivingEntity>(BehaviorControl<E> orig
 
     @Override
     public boolean tryStart(ServerLevel level, E entity, long gameTime) {
-        var successful = this.original.tryStart(level, entity, gameTime);
-
-        if (!successful) {
-            stopAction(entity);
-        }
-
-        return successful;
+        return this.original.tryStart(level, entity, gameTime);
     }
 
     @Override

@@ -114,8 +114,8 @@ public class FlyingNeedleEntity extends Projectile {
 
     public void shoot(LivingEntity target) {
         this.setFlying(true);
-        Vec3 direction = target.position().add(0, target.getBbHeight() / 2, 0).subtract(this.position()).normalize();
-        this.setDeltaMovement(direction.scale(2));
+        Vec3 direction = target.getHitbox().getCenter().subtract(this.position()).normalize();
+        this.setDeltaMovement(direction.scale(3));
         this.setYRot((float) (Math.atan2(-direction.x, direction.z) * (180 / Math.PI)));
         this.setXRot((float) (-Math.asin(direction.y) * (180 / Math.PI)));
         this.yRotO = this.getYRot();

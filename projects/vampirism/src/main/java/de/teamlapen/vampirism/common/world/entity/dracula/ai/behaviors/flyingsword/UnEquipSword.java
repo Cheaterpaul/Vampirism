@@ -19,13 +19,13 @@ public class UnEquipSword {
     }
 
     public static Set<MemoryModuleType<?>> memories() {
-        return Set.of(ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(), ModMemoryTypes.FLYING_SWORD_ACTIVE.get());
+        return Set.of(ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(), ModMemoryTypes.FLYING_SWORD_ACTIVE.get(), ModMemoryTypes.FLYING_SWORD_SHOT.get());
     }
 
     public static OneShot<Dracula> create() {
         return BehaviorBuilder.create(inst -> inst.group(
                 inst.present(ModMemoryTypes.FLYING_SWORD_EQUIPPED.get()),
-                inst.absent(ModMemoryTypes.FLYING_SWORD_ACTIVE.get()),
+                inst.present(ModMemoryTypes.FLYING_SWORD_ACTIVE.get()),
                 inst.present(ModMemoryTypes.FLYING_SWORD_SHOT.get())
         ).apply(inst, (equipped, active, shot) ->
                 (level, dracula, gameTime) -> {

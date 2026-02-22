@@ -31,7 +31,7 @@ public class FlyingSwordEntity extends Projectile {
         this.damage = damage;
         this.setPos(owner.getX(), owner.getEyeY(), owner.getZ());
 
-        Vec3 direction = target.getEyePosition().subtract(this.position()).normalize();
+        Vec3 direction = target.getHitbox().getCenter().subtract(this.position()).normalize();
         this.setDeltaMovement(direction.scale(1.5));
         this.setRot((float) (Math.atan2(-direction.x, direction.z) * (180 / Math.PI)), (float) (-Math.asin(direction.y) * (180 / Math.PI)));
         this.yRotO = this.getYRot();

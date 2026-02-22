@@ -5,6 +5,7 @@ import de.teamlapen.vampirism.common.core.ModSensors;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
+import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -77,44 +78,44 @@ public class FlyingNeedleAttack extends Behavior<Dracula> {
         this.ticks++;
         entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
 
-        if (phase == Phase.CHARGING) {
-            if (ticks % 10 == 0 && needles.size() < MAX_NEEDLES) {
-                FlyingNeedleEntity needle = new FlyingNeedleEntity(level, entity, 4.0f, needles.size(), MAX_NEEDLES);
+        if (this.phase == Phase.CHARGING) {
+            if (this.ticks % 10 == 0 && needles.size() < MAX_NEEDLES) {
+                FlyingNeedleEntity needle = new FlyingNeedleEntity(level, entity, 4.0f, this.needles.size(), MAX_NEEDLES);
                 level.addFreshEntity(needle);
-                needles.add(needle);
-                entity.getBrain().setMemory(ModMemoryTypes.FLYING_NEEDLES.get(), needles.stream().map(Entity::getUUID).toList());
+                this.needles.add(needle);
+                entity.getBrain().setMemory(ModMemoryTypes.FLYING_NEEDLES.get(), this.needles.stream().map(Entity::getUUID).toList());
             }
 
-            if (needles.size() == MAX_NEEDLES && ticks >= 80) { // Give some time for charging
-                targets.addAll(entity.getBrain().getMemory(ModMemoryTypes.NEAREST_ATTACKABLE.get()).orElseGet(List::of).stream().filter(x -> x.distanceToSqr(entity) < 20 * 20).toList());
+            if (this.needles.size() == MAX_NEEDLES && ticks >= 80) { // Give some time for charging
+                this.targets.addAll(entity.getBrain().getMemory(ModMemoryTypes.NEAREST_ATTACKABLE.get()).orElseGet(List::of).stream().filter(x -> x.distanceToSqr(entity) < 20 * 20).toList());
 
-                if (targets.isEmpty()) {
+                if (this.targets.isEmpty()) {
                     doStop(level, entity, gameTime);
                 } else {
-                    phase = Phase.FIRING;
-                    ticks = 0;
+                    this.phase = Phase.FIRING;
+                    this.ticks = 0;
                 }
             }
-        } else if (phase == Phase.FIRING) {
-            if (ticks % 10 == 0) {
-                needles.removeIf(n -> !n.isAlive() || n.isFlying());
-                if (needles.isEmpty()) {
+        } else if (this.phase == Phase.FIRING) {
+            if (this.ticks % 10 == 0) {
+                this.needles.removeIf(n -> !n.isAlive() || n.isFlying());
+                if (this.needles.isEmpty()) {
                     doStop(level, entity, gameTime);
                     return;
                 }
 
-                if (targets.isEmpty()) {
+                if (this.targets.isEmpty()) {
                     doStop(level, entity, gameTime);
                     return;
                 }
 
-                FlyingNeedleEntity needle = needles.getFirst();
-                needles.remove(needle);
-                LivingEntity target = targets.get(entity.getRandom().nextInt(targets.size()));
+                FlyingNeedleEntity needle = this.needles.getFirst();
+                this.needles.remove(needle);
+                LivingEntity target = this.targets.get(entity.getRandom().nextInt(this.targets.size()));
                 BehaviorUtils.lookAtEntity(entity, target);
                 needle.shoot(target);
-//                entity.triggerAnim(IDraculaAnimations.Animation.NEEDLE_1, IDraculaAnimations.Animation.NEEDLE_2); TODO Animation
-                ticks = 0; // Reset ticks to wait 5 for next firing
+                entity.triggerAnim(IDraculaAnimations.Animation.NEEDLE_1, IDraculaAnimations.Animation.NEEDLE_2);
+                this.ticks = 0; // Reset ticks to wait 5 for next firing
             }
         }
     }

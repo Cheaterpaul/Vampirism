@@ -51,7 +51,7 @@ public class DraculaPhase3Model extends DraculaModel {
     @Override
     public void setupAnim(DraculaRenderer.DraculaRenderState renderState) {
         super.setupAnim(renderState);
-        this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 10,1);
+        this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 1,1);
         this.idleAnimation.apply((long) renderState.ageInTicks * 50,  1);
 
         var keyFrame = switch (renderState.attackAnimationType) {

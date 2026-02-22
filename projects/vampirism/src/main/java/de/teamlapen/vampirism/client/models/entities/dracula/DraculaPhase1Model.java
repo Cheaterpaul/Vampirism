@@ -60,7 +60,7 @@ public class DraculaPhase1Model extends DraculaModel {
     @Override
     public void setupAnim(DraculaRenderer.DraculaRenderState renderState) {
         super.setupAnim(renderState);
-        this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 10,2);
+        this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 3,2);
         this.idleAnimation.apply((long) renderState.ageInTicks * 50,  1);
     }
 }
