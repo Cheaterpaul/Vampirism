@@ -25,11 +25,8 @@ public class FlyingNeedleRenderer extends EntityRenderer<FlyingNeedleEntity, Fly
 
     @Override
     public void submit(FlyingNeedleRenderState renderState, PoseStack poseStack, SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
-        poseStack.pushPose();
-        poseStack.translate(0, -1.25, 0);
         this.model.setupAnim(renderState);
         nodeCollector.submitModel(this.model, renderState, poseStack, RenderTypes.entityCutout(TEXTURE), renderState.lightCoords, 0, 0,null);
-        poseStack.popPose();
     }
 
     @Override
