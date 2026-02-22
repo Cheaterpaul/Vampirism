@@ -30,7 +30,7 @@ public class ActionsBuilder<E extends LivingEntity> {
     public void addAction(Activity activity, Consumer<ActionBuilder<E>> consumer) {
         ActionBuilder<E> builder = new ActionBuilder<>(activity, this.cooldownSupplier);
         consumer.accept(builder);
-        this.behaviors.forEach(builder::add);
+//        this.behaviors.forEach(builder::add);
         this.actions.add(builder.build());
     }
 

@@ -7,6 +7,7 @@ import de.teamlapen.vampirism.client.models.entities.*;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase1Model;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase2Model;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase3Model;
+import de.teamlapen.vampirism.client.models.entities.flying_needle.FlyingNeedleModel;
 import de.teamlapen.vampirism.client.renderer.entities.*;
 import de.teamlapen.vampirism.client.renderer.entities.layers.ConvertedVampireEntityLayer;
 import de.teamlapen.vampirism.client.renderer.entities.layers.VampirePlayerHeadLayer;
@@ -57,6 +58,7 @@ public class ModEntitiesRender {
     public static final ModelLayerLocation DARK_SPRUCE_CHEST_BOAT = new ModelLayerLocation(VIdentifier.mod("chest_boat/dark_spruce"), "main");
     public static final ModelLayerLocation CURSED_SPRUCE_BOAT = new ModelLayerLocation(VIdentifier.mod("boat/cursed_spruce"), "main");
     public static final ModelLayerLocation CURSED_SPRUCE_CHEST_BOAT = new ModelLayerLocation(VIdentifier.mod("chest_boat/cursed_spruce"), "main");
+    public static final ModelLayerLocation FLYING_NEEDLE = new ModelLayerLocation(VIdentifier.mod("flying_needle"), "main");
 
 
     public static void onRegisterRenderers(EntityRenderersEvent.@NotNull RegisterRenderers event) {
@@ -136,6 +138,7 @@ public class ModEntitiesRender {
         event.registerLayerDefinition(DRACULA_PHASE_1, DraculaPhase1Model::createBodyLayer);
         event.registerLayerDefinition(DRACULA_PHASE_2, DraculaPhase2Model::createBodyLayer);
         event.registerLayerDefinition(DRACULA_PHASE_3, DraculaPhase3Model::createBodyLayer);
+        event.registerLayerDefinition(FLYING_NEEDLE, FlyingNeedleModel::createBodyLayer);
     }
 
     public static void onAddLayers(EntityRenderersEvent.@NotNull AddLayers event) {

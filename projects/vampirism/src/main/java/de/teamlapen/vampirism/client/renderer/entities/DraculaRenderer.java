@@ -9,12 +9,14 @@ import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase2Model;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase3Model;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
+import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.AnimationState;
 
 public class DraculaRenderer extends LivingEntityRenderer<Dracula, DraculaRenderer.DraculaRenderState, DraculaModel> {
 
@@ -27,7 +29,7 @@ public class DraculaRenderer extends LivingEntityRenderer<Dracula, DraculaRender
     private final DraculaModel phase3Model;
 
     public DraculaRenderer(EntityRendererProvider.Context context) {
-        super(context, new DraculaPhase1Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_1)), 1);
+        super(context, new DraculaPhase1Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_1)), 0.5f);
         this.phase1Model = this.model;
         this.phase2Model = new DraculaPhase2Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_2));
         this.phase3Model = new DraculaPhase3Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_3));
@@ -69,11 +71,15 @@ public class DraculaRenderer extends LivingEntityRenderer<Dracula, DraculaRender
         super.extractRenderState(dracula, renderState, partialTicks);
         renderState.state = dracula.getStage();
         renderState.speedValue = (float) dracula.getDeltaMovement().lengthSqr();
+        dracula.copyAttackAnimationTo(renderState.attackAnimation);
+        renderState.attackAnimationType = dracula.getAttackAnimationType();
     }
 
     public static class DraculaRenderState extends LivingEntityRenderState {
         public float speedValue = 1.0F;
 
         public FightStage state = FightStage.NONE;
+        public IDraculaAnimations.Animation attackAnimationType = IDraculaAnimations.Animation.NONE;
+        public final AnimationState attackAnimation = new AnimationState();
     }
 }

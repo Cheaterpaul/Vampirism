@@ -52,6 +52,7 @@ public class ModMemoryTypes {
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_SWORD_ACTIVE = unit("action.flying_sword.active");
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_SWORD_COOLDOWN = unit("action.flying_sword.cooldown");
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_SWORD_EQUIPPED = unit("action.flying_sword.equipped");
+    public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_SWORD_SHOT = unit("action.flying_sword.shot");
 
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_NEEDLE_ACTIVE = unit("action.flying_needle.active");
     public static final DeferredHolder<MemoryModuleType<?>, MemoryModuleType<Unit>> FLYING_NEEDLE_COOLDOWN = unit("action.flying_needle.cooldown");

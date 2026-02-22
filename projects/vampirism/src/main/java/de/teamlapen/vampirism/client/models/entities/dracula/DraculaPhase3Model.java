@@ -10,11 +10,15 @@ public class DraculaPhase3Model extends DraculaModel {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
+    private final KeyframeAnimation attack1;
+    private final KeyframeAnimation attack2;
 
     public DraculaPhase3Model(ModelPart root) {
         super(root);
-        this.walkAnimation = DraculaAnimations.PHASE3WALK.bake(root);
-        this.idleAnimation = DraculaAnimations.PHASE3IDLE.bake(root);
+        this.walkAnimation = DraculaAnimations.Phase3.WALK.bake(root);
+        this.idleAnimation = DraculaAnimations.Phase3.IDLE.bake(root);
+        this.attack1 = DraculaAnimations.Phase3.ATTACK_1.bake(root);
+        this.attack2 = DraculaAnimations.Phase3.ATTACK_2.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -49,5 +53,14 @@ public class DraculaPhase3Model extends DraculaModel {
         super.setupAnim(renderState);
         this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 10,1);
         this.idleAnimation.apply((long) renderState.ageInTicks * 50,  1);
+
+        var keyFrame = switch (renderState.attackAnimationType) {
+            case ATTACK_1 -> this.attack1;
+            case ATTACK_2 -> this.attack2;
+            default -> null;
+        };
+        if (keyFrame != null) {
+            keyFrame.apply(renderState.attackAnimation, renderState.ageInTicks);
+        }
     }
 }

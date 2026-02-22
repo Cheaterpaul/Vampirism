@@ -37,6 +37,7 @@ public class DraculaAiSystem extends AiSystem<Dracula> {
     public void tick(ServerLevel level, Dracula entity) {
         this.updateMemories(entity);
         this.updateActivity(level, entity);
+        super.tick(level, entity);
     }
 
     private void updateMemories(Dracula entity) {

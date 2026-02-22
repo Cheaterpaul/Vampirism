@@ -6,7 +6,9 @@ import de.teamlapen.vampirism.common.particles.FlyingBloodEntityParticleOptions;
 import de.teamlapen.vampirism.common.world.entity.ai.activities.actions.ActionBuilder;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
+import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Unit;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -47,7 +49,8 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 ModMemoryTypes.FLYING_SWORD_COOLDOWN.get(),
                 ModMemoryTypes.FLYING_SWORD_ACTIVE.get(),
                 ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(),
-                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get()
+                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(),
+                ModMemoryTypes.FLYING_SWORD_SHOT.get()
         );
     }
 
@@ -60,7 +63,8 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                 ModMemoryTypes.FLYING_SWORD_COOLDOWN.get(), MemoryStatus.VALUE_ABSENT,
                 ModMemoryTypes.FLYING_SWORD_ACTIVE.get(), MemoryStatus.VALUE_PRESENT,
                 ModMemoryTypes.FLYING_SWORD_EQUIPPED.get(), MemoryStatus.VALUE_PRESENT,
-                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryStatus.VALUE_PRESENT
+                ModMemoryTypes.NEAREST_VISIBLE_ATTACKABLE.get(), MemoryStatus.VALUE_PRESENT,
+                ModMemoryTypes.FLYING_SWORD_SHOT.get(), MemoryStatus.VALUE_ABSENT
         ), 400);
     }
 
@@ -124,13 +128,19 @@ public class FlyingSwordAttack extends Behavior<Dracula> {
                     float damage = 5.0f + (targets.size() * 0.5f);
                     FlyingSwordEntity sword = new FlyingSwordEntity(level, entity, target, damage);
                     level.addFreshEntity(sword);
-//                    entity.triggerAnim(IDraculaAnimations.Animation.SWORD_1, IDraculaAnimations.Animation.SWORD_2); TODO animation
+                    entity.triggerAnim(IDraculaAnimations.Animation.FLYING_SWORD_1, IDraculaAnimations.Animation.FLYING_SWORD_2);
                     attacksDone++;
                 } else {
                     doStop(level, entity, gameTime);
                 }
             }
         }
+    }
+
+    @Override
+    protected void stop(ServerLevel level, Dracula entity, long gameTime) {
+        super.stop(level, entity, gameTime);
+        entity.getBrain().setMemory(ModMemoryTypes.FLYING_SWORD_SHOT.get(), Unit.INSTANCE);
     }
 
     @Override

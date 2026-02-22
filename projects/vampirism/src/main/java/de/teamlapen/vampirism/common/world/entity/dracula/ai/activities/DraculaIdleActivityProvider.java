@@ -46,7 +46,7 @@ public class DraculaIdleActivityProvider extends AiActivityProvider<Dracula> {
         return new RunOne<>(
                 ImmutableList.of(
                         Pair.of(RandomStroll.stroll(speed), 1),
-                        Pair.of(new DoNothing(30, 60), 1))
+                        Pair.of(new DoNothing(10, 30), 1))
         );
     }
 
@@ -54,7 +54,7 @@ public class DraculaIdleActivityProvider extends AiActivityProvider<Dracula> {
         return new RunOne<>(
                 ImmutableList.of(
                         Pair.of(SetEntityLookTarget.create(8.0F), 1),
-                        Pair.of(new DoNothing(30, 60), 1)
+                        Pair.of(new DoNothing(10, 30), 1)
                 )
         );
     }

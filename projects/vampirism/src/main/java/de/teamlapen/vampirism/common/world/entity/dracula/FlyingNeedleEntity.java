@@ -115,7 +115,7 @@ public class FlyingNeedleEntity extends Projectile {
     public void shoot(LivingEntity target) {
         this.setFlying(true);
         Vec3 direction = target.position().add(0, target.getBbHeight() / 2, 0).subtract(this.position()).normalize();
-        this.setDeltaMovement(direction.scale(1.5));
+        this.setDeltaMovement(direction.scale(2));
         this.setYRot((float) (Math.atan2(-direction.x, direction.z) * (180 / Math.PI)));
         this.setXRot((float) (-Math.asin(direction.y) * (180 / Math.PI)));
         this.yRotO = this.getYRot();
@@ -183,22 +183,4 @@ public class FlyingNeedleEntity extends Projectile {
         }
         output.putBoolean("flying", this.isFlying());
     }
-
-    //</editor-fold>
-
-//    //<editor-fold desc="Animation">
-//
-//    private final AnimatableInstanceCache geoCache = GeckoLibUtil.createInstanceCache(this);
-//
-//    @Override
-//    public void registerControllers(AnimatableManager.ControllerRegistrar controllerRegistrar) {
-//
-//    }
-//
-//    @Override
-//    public AnimatableInstanceCache getAnimatableInstanceCache() {
-//        return this.geoCache;
-//    }
-//
-//    //</editor-fold>
 }

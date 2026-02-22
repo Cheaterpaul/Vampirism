@@ -9,10 +9,12 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,10 +54,8 @@ public abstract class AiSystem<E extends LivingEntity> {
         return brain;
     }
 
-    public Collection<Action<E>> getActions() {
-        return this.activityProviders.stream()
-                .flatMap(p -> p.getActions().stream())
-                .collect(Collectors.toList());
+    public Map<Activity,Collection<Action<E>>> getActions() {
+        return this.activityProviders.stream().collect(Collectors.toMap(AiActivityProvider::getActivity, AiActivityProvider::getActions));
     }
 
     public Brain.Provider<E> brainProvider() {
@@ -74,7 +74,12 @@ public abstract class AiSystem<E extends LivingEntity> {
         brain.useDefaultActivity();
     }
 
-    public abstract void tick(ServerLevel level, E entity);
+    @SuppressWarnings("unchecked")
+    @MustBeInvokedByOverriders
+    public void tick(ServerLevel level, E entity) {
+        Brain<E> brain = (Brain<E>) entity.getBrain();
+        brain.tick(level, entity);
+    }
 
     @SuppressWarnings("unchecked")
     public void stop(ServerLevel level, E entity) {

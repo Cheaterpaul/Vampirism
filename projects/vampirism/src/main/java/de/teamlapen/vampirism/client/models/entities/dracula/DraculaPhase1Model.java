@@ -13,8 +13,8 @@ public class DraculaPhase1Model extends DraculaModel {
 
     public DraculaPhase1Model(ModelPart root) {
         super(root);
-        this.walkAnimation = DraculaAnimations.PHASE1WALK.bake(root);
-        this.idleAnimation = DraculaAnimations.PHASE1IDLE.bake(root);
+        this.walkAnimation = DraculaAnimations.Phase1.WALK.bake(root);
+        this.idleAnimation = DraculaAnimations.Phase1.IDLE.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {

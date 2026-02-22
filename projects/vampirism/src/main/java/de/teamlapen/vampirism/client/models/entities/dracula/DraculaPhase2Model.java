@@ -10,11 +10,19 @@ public class DraculaPhase2Model extends DraculaModel {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
+    private final KeyframeAnimation needleAttack1;
+    private final KeyframeAnimation needleAttack2;
+    private final KeyframeAnimation flyingSwordAttack1;
+    private final KeyframeAnimation flyingSwordAttack2;
 
     public DraculaPhase2Model(ModelPart root) {
         super(root);
-        this.walkAnimation = DraculaAnimations.PHASE2WALK.bake(root);
-        this.idleAnimation = DraculaAnimations.PHASE2IDLE.bake(root);
+        this.walkAnimation = DraculaAnimations.Phase2.WALK.bake(root);
+        this.idleAnimation = DraculaAnimations.Phase2.IDLE.bake(root);
+        this.needleAttack1 = DraculaAnimations.Phase2.NEEDLES_ATTACK_1.bake(root);
+        this.needleAttack2 = DraculaAnimations.Phase2.NEEDLES_ATTACK_2.bake(root);
+        this.flyingSwordAttack1 = DraculaAnimations.Phase2.FLYING_SWORD_ATTACK_1.bake(root);
+        this.flyingSwordAttack2 = DraculaAnimations.Phase2.FLYING_SWORD_ATTACK_2.bake(root);
     }
 
     public static LayerDefinition createBodyLayer() {
@@ -56,5 +64,16 @@ public class DraculaPhase2Model extends DraculaModel {
         super.setupAnim(renderState);
         this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 10,1);
         this.idleAnimation.apply((long) renderState.ageInTicks * 50,  1);
+
+        var keyFrame = switch (renderState.attackAnimationType) {
+            case NEEDLE_1 -> this.needleAttack1;
+            case NEEDLE_2 -> this.needleAttack2;
+            case FLYING_SWORD_1 -> this.flyingSwordAttack1;
+            case FLYING_SWORD_2 -> this.flyingSwordAttack2;
+            default -> null;
+        };
+        if (keyFrame != null) {
+            keyFrame.apply(renderState.attackAnimation, renderState.ageInTicks);
+        }
     }
 }

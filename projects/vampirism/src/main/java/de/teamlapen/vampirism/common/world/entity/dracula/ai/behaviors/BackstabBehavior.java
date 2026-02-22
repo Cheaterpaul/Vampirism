@@ -57,18 +57,27 @@ public class BackstabBehavior extends Behavior<Dracula> {
         this.originalPos = entity.position();
         this.ticks = 0;
 
-        HurtByEntities hurtByEntities = entity.getBrain().getMemory(ModMemoryTypes.HURT_BY_ENTITIES.get()).orElseGet(HurtByEntities::empty);
-        Optional<HurtByEntities.HurtBy> first = hurtByEntities.hurtBy().stream().filter(x -> x.distanceSqt() > 5 * 5 && x.distanceSqt() < 20 * 20 && x.entity().distanceToSqr(entity) > 5 * 5 && x.entity().isAlive()).findFirst();
-        if (first.isEmpty())  {
+        var targetOpt = getTarget(entity);
+        if (targetOpt.isEmpty())  {
             doStop(level, entity, gameTime);
             return;
         }
-        var target = first.get().entity();
+        var target = targetOpt.get().entity();
         Vec3 behind = target.position().add(target.getLookAngle().scale(-1.5));
         entity.teleportTo(behind.x, behind.y, behind.z);
 
         entity.doHurtTarget(level, target);
         entity.swing(entity.getUsedItemHand());
+    }
+
+    @Override
+    protected boolean checkExtraStartConditions(ServerLevel level, Dracula owner) {
+        return getTarget(owner).isPresent();
+    }
+
+    private Optional<HurtByEntities.HurtBy> getTarget(Dracula owner) {
+        HurtByEntities hurtByEntities = owner.getBrain().getMemory(ModMemoryTypes.HURT_BY_ENTITIES.get()).orElseGet(HurtByEntities::empty);
+        return hurtByEntities.hurtBy().stream().filter(x -> x.distanceSqt() > 5 * 5 && x.distanceSqt() < 20 * 20 && x.entity().distanceToSqr(owner) > 5 * 5 && x.entity().isAlive()).findFirst();
     }
 
     @Override

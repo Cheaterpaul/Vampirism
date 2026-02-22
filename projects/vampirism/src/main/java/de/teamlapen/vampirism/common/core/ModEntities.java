@@ -8,15 +8,13 @@ import de.teamlapen.vampirism.REFERENCE;
 import de.teamlapen.vampirism.api.VEnums;
 import de.teamlapen.vampirism.api.VampirismRegistries;
 import de.teamlapen.vampirism.api.world.entity.convertible.Converter;
+import de.teamlapen.vampirism.common.util.serialization.ModStreamCodecs;
 import de.teamlapen.vampirism.common.util.serialization.conditions.EntityExistsCondition;
 import de.teamlapen.vampirism.common.world.entity.*;
 import de.teamlapen.vampirism.common.world.entity.converted.*;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.DefaultConverter;
 import de.teamlapen.vampirism.common.world.entity.converted.converter.SpecialConverter;
-import de.teamlapen.vampirism.common.world.entity.dracula.BloodProjectileEntity;
-import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
-import de.teamlapen.vampirism.common.world.entity.dracula.FlyingNeedleEntity;
-import de.teamlapen.vampirism.common.world.entity.dracula.FlyingSwordEntity;
+import de.teamlapen.vampirism.common.world.entity.dracula.*;
 import de.teamlapen.vampirism.common.world.entity.dracula.ai.DraculaState;
 import de.teamlapen.vampirism.common.world.entity.hunter.*;
 import de.teamlapen.vampirism.common.world.entity.minion.HunterMinionEntity;
@@ -124,6 +122,8 @@ public class ModEntities {
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Holder<Item>>> ITEM_HOLDER = DATA_SERIALIZER.register("item_holder", () -> (EntityDataSerializer.ForValueType<Holder<Item>>) (() -> ByteBufCodecs.holderRegistry(Registries.ITEM)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<Optional<UUID>>> OPTIONAL_UUID = DATA_SERIALIZER.register("optional_uuid", () -> (EntityDataSerializer.ForValueType<Optional<UUID>>) (() -> ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC)));
     public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<DraculaState>> DRACULA_STATE = DATA_SERIALIZER.register("dracula_state", () -> (EntityDataSerializer.ForValueType<DraculaState>) (() -> DraculaState.STREAM_CODEC));
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<AnimationState>> ANIMATION_STATE = DATA_SERIALIZER.register("animation_state", () -> (EntityDataSerializer.ForValueType<AnimationState>) (() -> ModStreamCodecs.ANIMATION_STATE));
+    public static final DeferredHolder<EntityDataSerializer<?>, EntityDataSerializer<IDraculaAnimations.Animation>> DRACULA_ANIMATION = DATA_SERIALIZER.register("dracula_animation", () -> (EntityDataSerializer.ForValueType<IDraculaAnimations.Animation>) (() -> IDraculaAnimations.Animation.STREAM_CODEC));
 
     static void register(IEventBus bus) {
         ENTITY_TYPES.register(bus);

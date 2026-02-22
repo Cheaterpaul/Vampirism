@@ -25,6 +25,7 @@
     "ThrowablePotionItemMixin",
     "ThrownPotionMixin",
     "VibrationSystemUserMixin",
+    "accessor.AnimationStateAccessor",
     "accessor.AttributeInstanceAccessor",
     "accessor.EntityAccessor",
     "accessor.FoodDataAccessor",

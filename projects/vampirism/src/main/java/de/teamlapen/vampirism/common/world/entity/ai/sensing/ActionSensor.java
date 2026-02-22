@@ -9,6 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.Sensor;
+import net.minecraft.world.entity.schedule.Activity;
 
 import java.util.*;
 
@@ -34,7 +35,7 @@ public class ActionSensor<T extends LivingEntity> extends Sensor<T> {
         updateActions(level, entity, brain,  memory.get().getActions());
     }
 
-    public void updateActions(ServerLevel level, T entity, Brain<T> brain, Collection<Action<T>> actions) {
+    public void updateActions(ServerLevel level, T entity, Brain<T> brain, Map<Activity, Collection<Action<T>>> actionsByActivity) {
         if (brain.hasMemoryValue(ModMemoryTypes.ACTION_ACTIVE.get())) {
             Optional<Long> actionActiveSince = brain.getMemory(ModMemoryTypes.ACTION_ACTIVE_SINCE.get());
 
@@ -47,16 +48,18 @@ public class ActionSensor<T extends LivingEntity> extends Sensor<T> {
                 return;
             }
 
-            if (actions.stream().map(Action::activity).noneMatch(brain::isActive)) {
+            if (actionsByActivity.values().stream().flatMap(Collection::stream).map(Action::activity).noneMatch(brain::isActive)) {
                 brain.eraseMemory(ModMemoryTypes.ACTION_ACTIVE.get());
                 brain.eraseMemory(ModMemoryTypes.ACTION_COOLDOWN.get());
                 brain.eraseMemory(ModMemoryTypes.ACTION_ACTIVE_SINCE.get());
             }
         } else if (!brain.hasMemoryValue(ModMemoryTypes.ACTION_COOLDOWN.get())) {
-            ArrayList<Action<T>> actions1 = new ArrayList<>(actions);
-            Collections.shuffle(actions1);
+            var activity = brain.getActiveNonCoreActivity().orElse(null);
+            if (activity == null || activity == Activity.IDLE) return;
+            ArrayList<Action<T>> actions = new ArrayList<>(actionsByActivity.get(activity));
+            Collections.shuffle(actions);
 
-            for (Action<T> action : actions1) {
+            for (Action<T> action : actions) {
                 if (brain.hasMemoryValue(action.cooldownMemory().memory())) {
                     continue;
                 }

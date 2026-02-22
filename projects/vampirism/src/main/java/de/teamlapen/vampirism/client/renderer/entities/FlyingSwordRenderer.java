@@ -55,7 +55,12 @@ public class FlyingSwordRenderer extends EntityRenderer<FlyingSwordEntity, Flyin
     }
 
     private static void vertex0(VertexConsumer pConsumer, Matrix4f pMatrix, PoseStack.Pose pPose, int pLight, float pX, float pY, int pU, int pV) {
-        pConsumer.addVertex(pMatrix, pX, pY, 0.0f).setColor(255, 255, 255, 255).setUv((float)pU, (float)pV).setOverlay(OverlayTexture.NO_OVERLAY).setLight(pLight).setNormal(pPose, 0.0F, 0.0F, 1.0F);
+        pConsumer.addVertex(pMatrix, pX, pY, 0.0f)
+                .setColor(255, 255, 255, 255)
+                .setUv((float)pU, (float)pV)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(pLight)
+                .setNormal(pPose, 0.0F, 0.0F, 1.0F);
     }
 
     public static class FlyingSwordRenderState extends EntityRenderState {

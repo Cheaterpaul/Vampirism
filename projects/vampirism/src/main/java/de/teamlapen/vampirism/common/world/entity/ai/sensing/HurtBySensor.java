@@ -32,7 +32,11 @@ public class HurtBySensor extends Sensor<LivingEntity> {
         ArrayList<HurtByEntities.HurtBy> newHurts = new ArrayList<>(hurtBy.hurtBy());
         newHurts.removeAll(remove);
 
-        brain.setMemory(ModMemoryTypes.HURT_BY_ENTITIES.get(), new HurtByEntities(newHurts));
+        if (newHurts.isEmpty()) {
+            brain.eraseMemory(ModMemoryTypes.HURT_BY_ENTITIES.get());
+        } else {
+            brain.setMemory(ModMemoryTypes.HURT_BY_ENTITIES.get(), new HurtByEntities(newHurts));
+        }
     }
 
     @Override
