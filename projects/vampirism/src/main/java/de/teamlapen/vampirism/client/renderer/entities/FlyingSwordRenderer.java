@@ -37,30 +37,44 @@ public class FlyingSwordRenderer extends EntityRenderer<FlyingSwordEntity, Flyin
     @Override
     public void submit(FlyingSwordRenderState state, PoseStack poseStack, SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - state.yRot));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.xRot));
+        poseStack.mulPose(Axis.YP.rotationDegrees(- state.yRot));
+        poseStack.mulPose(Axis.XP.rotationDegrees(state.xRot));
 
         nodeCollector.submitCustomGeometry(poseStack, RenderTypes.entityCutout(TEXTURE), (pose, vertexBuilder) -> {
-            float size = 0.5f;
+            float size = 1f;
             Matrix4f matrix4f = pose.pose();
             int light = 15728880;
-            vertex0(vertexBuilder, matrix4f, pose, light, -size, -size, 0, 1);
-            vertex0(vertexBuilder, matrix4f, pose, light, size, -size, 1, 1);
-            vertex0(vertexBuilder, matrix4f, pose, light, size, size, 1, 0);
-            vertex0(vertexBuilder, matrix4f, pose, light, -size, size, 0, 0);
+
+            // Render on the right side (looking from behind)
+            // U=0 (arrow tip) should be at Z = +size (forward)
+            // U=1 (arrow tail) should be at Z = -size (backward)
+            vertex0(vertexBuilder, matrix4f, pose, light, 0.01f, -size, -size, 1, 1, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, 0.01f, -size,  size, 0, 1, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, 0.01f,  size,  size, 0, 0, 1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, 0.01f,  size, -size, 1, 0, 1, 0, 0);
+
+            // Render on the left side (looking from behind)
+            // U=0 (arrow tip) should be at Z = +size (forward)
+            // U=1 (arrow tail) should be at Z = -size (backward)
+            // Normal is pointing left (-1, 0, 0).
+            // Winding order reversed to keep it counter-clockwise for the outside.
+            vertex0(vertexBuilder, matrix4f, pose, light, -0.01f, -size,  size, 0, 1, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -0.01f, -size, -size, 1, 1, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -0.01f,  size, -size, 1, 0, -1, 0, 0);
+            vertex0(vertexBuilder, matrix4f, pose, light, -0.01f,  size,  size, 0, 0, -1, 0, 0);
         });
 
         poseStack.popPose();
         super.submit(state, poseStack, nodeCollector, cameraRenderState);
     }
 
-    private static void vertex0(VertexConsumer pConsumer, Matrix4f pMatrix, PoseStack.Pose pPose, int pLight, float pX, float pY, int pU, int pV) {
-        pConsumer.addVertex(pMatrix, pX, pY, 0.0f)
+    private static void vertex0(VertexConsumer pConsumer, Matrix4f pMatrix, PoseStack.Pose pPose, int pLight, float pX, float pY, float pZ, float pU, float pV, float nX, float nY, float nZ) {
+        pConsumer.addVertex(pMatrix, pX, pY, pZ)
                 .setColor(255, 255, 255, 255)
-                .setUv((float)pU, (float)pV)
+                .setUv(pU, pV)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
                 .setLight(pLight)
-                .setNormal(pPose, 0.0F, 0.0F, 1.0F);
+                .setNormal(pPose, nX, nY, nZ);
     }
 
     public static class FlyingSwordRenderState extends EntityRenderState {

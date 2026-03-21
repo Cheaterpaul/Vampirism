@@ -1,12 +1,15 @@
 package de.teamlapen.vampirism.client.models.entities.dracula;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import de.teamlapen.vampirism.client.renderer.entities.DraculaRenderer;
 import net.minecraft.client.animation.KeyframeAnimation;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.HumanoidArm;
 
-public class DraculaPhase2Model extends DraculaModel {
+public class DraculaPhase2Model extends DraculaModel implements ArmedModel<DraculaRenderer.DraculaRenderState> {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
@@ -15,8 +18,19 @@ public class DraculaPhase2Model extends DraculaModel {
     private final KeyframeAnimation flyingSwordAttack1;
     private final KeyframeAnimation flyingSwordAttack2;
 
+    private final ModelPart body;
+    private final ModelPart shirt;
+    private final ModelPart leftArm;
+    private final ModelPart rightArm;
+
     public DraculaPhase2Model(ModelPart root) {
         super(root);
+
+        this.body = root.getChild("body");
+        this.shirt = this.body.getChild("shirt");
+        this.leftArm = this.shirt.getChild("left_arm");
+        this.rightArm = this.shirt.getChild("right_arm");
+
         this.walkAnimation = DraculaAnimations.Phase2.WALK.bake(root);
         this.idleAnimation = DraculaAnimations.Phase2.IDLE.bake(root);
         this.needleAttack1 = DraculaAnimations.Phase2.NEEDLES_ATTACK_1.bake(root);
@@ -75,5 +89,14 @@ public class DraculaPhase2Model extends DraculaModel {
         if (keyFrame != null) {
             keyFrame.apply(renderState.attackAnimation, renderState.ageInTicks);
         }
+    }
+
+    @Override
+    public void translateToHand(DraculaRenderer.DraculaRenderState renderState, HumanoidArm arm, PoseStack poseStack) {
+        root().translateAndRotate(poseStack);
+        this.body.translateAndRotate(poseStack);
+        this.shirt.translateAndRotate(poseStack);
+        var armPart = arm == HumanoidArm.LEFT ? leftArm : rightArm;
+        armPart.translateAndRotate(poseStack);
     }
 }

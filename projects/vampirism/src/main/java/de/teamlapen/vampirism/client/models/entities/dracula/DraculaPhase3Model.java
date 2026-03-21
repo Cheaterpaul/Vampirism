@@ -1,20 +1,32 @@
 package de.teamlapen.vampirism.client.models.entities.dracula;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import de.teamlapen.vampirism.client.renderer.entities.DraculaRenderer;
 import net.minecraft.client.animation.KeyframeAnimation;
+import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.HumanoidArm;
 
-public class DraculaPhase3Model extends DraculaModel {
+public class DraculaPhase3Model extends DraculaModel implements ArmedModel<DraculaRenderer.DraculaRenderState> {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
     private final KeyframeAnimation attack1;
     private final KeyframeAnimation attack2;
 
+    private final ModelPart leftArm;
+    private final ModelPart rightArm;
+
     public DraculaPhase3Model(ModelPart root) {
         super(root);
+
+        ModelPart body = root.getChild("body");
+        this.leftArm = body.getChild("left_arm");
+        this.rightArm = body.getChild("right_arm");
+
+
         this.walkAnimation = DraculaAnimations.Phase3.WALK.bake(root);
         this.idleAnimation = DraculaAnimations.Phase3.IDLE.bake(root);
         this.attack1 = DraculaAnimations.Phase3.ATTACK_1.bake(root);
@@ -62,5 +74,11 @@ public class DraculaPhase3Model extends DraculaModel {
         if (keyFrame != null) {
             keyFrame.apply(renderState.attackAnimation, renderState.ageInTicks);
         }
+    }
+
+    @Override
+    public void translateToHand(DraculaRenderer.DraculaRenderState renderState, HumanoidArm arm, PoseStack poseStack) {
+        this.root().translateAndRotate(poseStack);
+
     }
 }
