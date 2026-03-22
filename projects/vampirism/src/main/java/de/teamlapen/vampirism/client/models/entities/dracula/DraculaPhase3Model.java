@@ -3,13 +3,12 @@ package de.teamlapen.vampirism.client.models.entities.dracula;
 import com.mojang.blaze3d.vertex.PoseStack;
 import de.teamlapen.vampirism.client.renderer.entities.DraculaRenderer;
 import net.minecraft.client.animation.KeyframeAnimation;
-import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class DraculaPhase3Model extends DraculaModel implements ArmedModel<DraculaRenderer.DraculaRenderState> {
+public class DraculaPhase3Model extends DraculaModel {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
@@ -80,5 +79,10 @@ public class DraculaPhase3Model extends DraculaModel implements ArmedModel<Dracu
     public void translateToHand(DraculaRenderer.DraculaRenderState renderState, HumanoidArm arm, PoseStack poseStack) {
         this.root().translateAndRotate(poseStack);
 
+    }
+
+    @Override
+    public boolean hasArms() {
+        return true;
     }
 }

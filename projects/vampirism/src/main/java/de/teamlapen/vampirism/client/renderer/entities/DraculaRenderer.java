@@ -7,14 +7,14 @@ import de.teamlapen.vampirism.client.models.entities.dracula.DraculaModel;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase1Model;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase2Model;
 import de.teamlapen.vampirism.client.models.entities.dracula.DraculaPhase3Model;
+import de.teamlapen.vampirism.client.renderer.entities.layers.DraculaItemInHandLayer;
 import de.teamlapen.vampirism.common.world.entity.dracula.Dracula;
 import de.teamlapen.vampirism.common.world.entity.dracula.FightStage;
 import de.teamlapen.vampirism.common.world.entity.dracula.IDraculaAnimations;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
-import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
+import net.minecraft.client.renderer.entity.state.ArmedEntityRenderState;
 import net.minecraft.client.renderer.state.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.AnimationState;
@@ -34,7 +34,7 @@ public class DraculaRenderer extends LivingEntityRenderer<Dracula, DraculaRender
         this.phase1Model = this.model;
         this.phase2Model = new DraculaPhase2Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_2));
         this.phase3Model = new DraculaPhase3Model(context.getModelSet().bakeLayer(ModEntitiesRender.DRACULA_PHASE_3));
-        this.addLayer(new ItemInHandLayer<>(this));
+        this.addLayer(new DraculaItemInHandLayer(this));
     }
 
     @Override
@@ -71,13 +71,14 @@ public class DraculaRenderer extends LivingEntityRenderer<Dracula, DraculaRender
     @Override
     public void extractRenderState(Dracula dracula, DraculaRenderState renderState, float partialTicks) {
         super.extractRenderState(dracula, renderState, partialTicks);
+        ArmedEntityRenderState.extractArmedEntityRenderState(dracula, renderState, this.itemModelResolver, partialTicks);
         renderState.state = dracula.getStage();
         renderState.speedValue = (float) dracula.getDeltaMovement().lengthSqr();
         dracula.copyAttackAnimationTo(renderState.attackAnimation);
         renderState.attackAnimationType = dracula.getAttackAnimationType();
     }
 
-    public static class DraculaRenderState extends LivingEntityRenderState {
+    public static class DraculaRenderState extends ArmedEntityRenderState {
         public float speedValue = 1.0F;
 
         public FightStage state = FightStage.NONE;

@@ -1,10 +1,12 @@
 package de.teamlapen.vampirism.client.models.entities.dracula;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import de.teamlapen.vampirism.client.renderer.entities.DraculaRenderer;
 import net.minecraft.client.animation.KeyframeAnimation;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
+import net.minecraft.world.entity.HumanoidArm;
 
 public class DraculaPhase1Model extends DraculaModel {
 
@@ -62,5 +64,15 @@ public class DraculaPhase1Model extends DraculaModel {
         super.setupAnim(renderState);
         this.walkAnimation.applyWalk(renderState.walkAnimationPos, renderState.walkAnimationSpeed, 3,2);
         this.idleAnimation.apply((long) renderState.ageInTicks * 50,  1);
+    }
+
+    @Override
+    public void translateToHand(DraculaRenderer.DraculaRenderState draculaRenderState, HumanoidArm humanoidArm, PoseStack poseStack) {
+
+    }
+
+    @Override
+    public boolean hasArms() {
+        return false;
     }
 }

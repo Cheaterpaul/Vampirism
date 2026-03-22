@@ -3,13 +3,12 @@ package de.teamlapen.vampirism.client.models.entities.dracula;
 import com.mojang.blaze3d.vertex.PoseStack;
 import de.teamlapen.vampirism.client.renderer.entities.DraculaRenderer;
 import net.minecraft.client.animation.KeyframeAnimation;
-import net.minecraft.client.model.ArmedModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.world.entity.HumanoidArm;
 
-public class DraculaPhase2Model extends DraculaModel implements ArmedModel<DraculaRenderer.DraculaRenderState> {
+public class DraculaPhase2Model extends DraculaModel {
 
     private final KeyframeAnimation walkAnimation;
     private final KeyframeAnimation idleAnimation;
@@ -22,6 +21,8 @@ public class DraculaPhase2Model extends DraculaModel implements ArmedModel<Dracu
     private final ModelPart shirt;
     private final ModelPart leftArm;
     private final ModelPart rightArm;
+    private final ModelPart leftHand;
+    private final ModelPart rightHand;
 
     public DraculaPhase2Model(ModelPart root) {
         super(root);
@@ -30,6 +31,8 @@ public class DraculaPhase2Model extends DraculaModel implements ArmedModel<Dracu
         this.shirt = this.body.getChild("shirt");
         this.leftArm = this.shirt.getChild("left_arm");
         this.rightArm = this.shirt.getChild("right_arm");
+        this.leftHand = this.leftArm.getChild("left_hand");
+        this.rightHand = this.rightArm.getChild("right_hand");
 
         this.walkAnimation = DraculaAnimations.Phase2.WALK.bake(root);
         this.idleAnimation = DraculaAnimations.Phase2.IDLE.bake(root);
@@ -48,8 +51,10 @@ public class DraculaPhase2Model extends DraculaModel implements ArmedModel<Dracu
         PartDefinition head = neck.addOrReplaceChild("head", CubeListBuilder.create().texOffs(96, 0).addBox(-6.0F, -7.0F, -1.5F, 8.0F, 8.0F, 8.0F, new CubeDeformation(1.0F)), PartPose.offsetAndRotation(2.0F, -5.0F, -3.0F, 0.2618F, 0.0F, 0.0F));
         PartDefinition shirt = body.addOrReplaceChild("shirt", CubeListBuilder.create(), PartPose.offsetAndRotation(0.0F, 0.0F, 0.0F, -0.0175F, 0.0F, 0.0F));
         PartDefinition left_arm = shirt.addOrReplaceChild("left_arm", CubeListBuilder.create().texOffs(40, 47).addBox(0.0F, 0.0F, -2.77F, 4.0F, 28.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(6.0F, -19.0F, 0.5F, 0.0F, 0.0F, -0.0436F));
+        PartDefinition left_hand = left_arm.addOrReplaceChild("left_hand", CubeListBuilder.create(), PartPose.offset(2.0F, 26.0F, -0.5F));
         PartDefinition left_arm_cuff = left_arm.addOrReplaceChild("left_arm_cuff", CubeListBuilder.create().texOffs(80, 56).addBox(0.0F, 0.0F, -2.77F, 4.0F, 28.0F, 6.0F, new CubeDeformation(0.2F)), PartPose.offset(0.0F, 0.0F, 0.0F));
         PartDefinition right_arm = shirt.addOrReplaceChild("right_arm", CubeListBuilder.create().texOffs(60, 47).addBox(-4.0F, 0.0F, -2.77F, 4.0F, 28.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(-6.0F, -19.0F, 0.5F, 0.0F, 0.0F, 0.0436F));
+        PartDefinition right_hand = right_arm.addOrReplaceChild("right_hand", CubeListBuilder.create(), PartPose.offset(-2.0F, 26.0F, -0.5F));
         PartDefinition right_arm_cuff = right_arm.addOrReplaceChild("right_arm_cuff", CubeListBuilder.create().texOffs(100, 56).addBox(-4.0F, 0.0F, -2.77F, 4.0F, 28.0F, 6.0F, new CubeDeformation(0.2F)), PartPose.offset(0.0F, 0.0F, 0.0F));
         PartDefinition shirt_top = shirt.addOrReplaceChild("shirt_top", CubeListBuilder.create().texOffs(92, 24).addBox(-6.0F, 0.0F, -2.27F, 12.0F, 8.0F, 6.0F, new CubeDeformation(0.0F)), PartPose.offsetAndRotation(0.0F, -19.0F, 0.0F, -0.0349F, 0.0F, 0.0F));
         PartDefinition bow_tie = shirt_top.addOrReplaceChild("bow_tie", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, -2.8382F));
@@ -96,7 +101,20 @@ public class DraculaPhase2Model extends DraculaModel implements ArmedModel<Dracu
         root().translateAndRotate(poseStack);
         this.body.translateAndRotate(poseStack);
         this.shirt.translateAndRotate(poseStack);
-        var armPart = arm == HumanoidArm.LEFT ? leftArm : rightArm;
-        armPart.translateAndRotate(poseStack);
+        switch (arm) {
+            case LEFT -> {
+                this.leftArm.translateAndRotate(poseStack);
+                this.leftHand.translateAndRotate(poseStack);
+            }
+            case RIGHT -> {
+                this.rightArm.translateAndRotate(poseStack);
+                this.rightHand.translateAndRotate(poseStack);
+            }
+        }
+    }
+
+    @Override
+    public boolean hasArms() {
+        return true;
     }
 }

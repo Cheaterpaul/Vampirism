@@ -46,7 +46,7 @@ public class Dracula extends PathfinderMob implements IDraculaAnimations, IEntit
 
     @Override
     public HumanoidArm getMainArm() {
-        return HumanoidArm.RIGHT;
+        return HumanoidArm.LEFT;
     }
 
     public FightStage getStage() {
