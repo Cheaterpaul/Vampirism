@@ -40,7 +40,7 @@ jobs:
           if [[ $project == 'vampirism' ]]; then
             jar_name="Vampirism"
           else
-            jar_name="FactionAPI"
+            jar_name="FactionApi"
           fi
           echo "jar_name=${jar_name}" >> $GITHUB_OUTPUT
           echo "run_publish=false" >> $GITHUB_OUTPUT
