@@ -31,7 +31,7 @@ jobs:
           version="${GITHUB_REF_NAME#*/}"
           echo "project=${project}" >> $GITHUB_OUTPUT
           echo "mc_version=${version%%-*}" >> $GITHUB_OUTPUT
-          echo "mod_version=${version#*-}" >> $GITHUB_OUTPUT
+          echo "mod_version=${version}" >> $GITHUB_OUTPUT
           if [[ $version =~ -(alpha|beta)\. ]]; then
             echo "environment=${project}/staging" >> $GITHUB_OUTPUT
           else
