@@ -92,6 +92,11 @@ jobs:
           java-version: '25'
           distribution: 'adopt'
           cache: 'gradle'
+      - name: Get Artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ needs.prepare.outputs.project }}-jars
+          path: projects/
       - name: Setup Gradle
         run: ./gradlew -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
       - name: Publish to Maven
@@ -111,7 +116,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: ${{ needs.prepare.outputs.project }}-jars
-          path: jars/
+          path: projects/
       - name: Publish
         uses: Kir-Antipov/mc-publish@v3.3
         with:
@@ -119,7 +124,7 @@ jobs:
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: jars/projects/${{ needs.prepare.outputs.project }}/build/libs/${{ needs.prepare.outputs.jar_name }}-${{ needs.prepare.outputs.mod_version }}.jar
+          files: projects/${{ needs.prepare.outputs.project }}/build/libs/${{ needs.prepare.outputs.jar_name }}-${{ needs.prepare.outputs.mod_version }}.jar
           name: ${{ needs.prepare.outputs.jar_name }} ${{ needs.prepare.outputs.mod_version }}
           version: ${{ needs.prepare.outputs.mod_version }}
           version-type: ${{ contains(needs.prepare.outputs.mod_version, 'alpha') && 'alpha' || contains(needs.prepare.outputs.mod_version, 'beta') && 'beta' || 'release' }}
