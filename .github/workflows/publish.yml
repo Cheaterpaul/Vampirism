@@ -45,10 +45,10 @@ jobs:
           fi
           if [[ $project == 'vampirism' ]]; then
             echo "jar_name=Vampirism" >> $GITHUB_OUTPUT
-            echo "mod_version_parameter=vampirism_version=${mod_version}" >> $GITHUB_OUTPUT
+            echo "mod_version_parameter=vampirism_version" >> $GITHUB_OUTPUT
           else
             echo "jar_name=FactionApi" >> $GITHUB_OUTPUT
-            echo "mod_version_parameter=factions_version=${mod_version}" >> $GITHUB_OUTPUT
+            echo "mod_version_parameter=factions_version" >> $GITHUB_OUTPUT
           fi
 
   build:
@@ -65,11 +65,11 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
       - name: Setup Gradle
-        run: ./gradlew -P${{ needs.prepare.outputs.mod_version_parameter }}
+        run: ./gradlew -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
       - name: Build API
-        run: ./gradlew ${{ needs.prepare.outputs.project }}-api:build -P${{ needs.prepare.outputs.mod_version_parameter }}
+        run: ./gradlew ${{ needs.prepare.outputs.project }}-api:build -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
       - name: Build Mod
-        run: ./gradlew ${{ needs.prepare.outputs.project }}:build -P${{ needs.prepare.outputs.mod_version_parameter }}
+        run: ./gradlew ${{ needs.prepare.outputs.project }}:build -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
       - name: Upload Jars
         uses: actions/upload-artifact@v6
         with:
@@ -93,9 +93,9 @@ jobs:
           distribution: 'adopt'
           cache: 'gradle'
       - name: Setup Gradle
-        run: ./gradlew -P${{ needs.prepare.outputs.mod_version_parameter }}
+        run: ./gradlew -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
       - name: Publish to Maven
-        run: ./gradlew ${{ needs.prepare.outputs.project }}:publish -P${{ needs.prepare.outputs.mod_version_parameter }}
+        run: ./gradlew ${{ needs.prepare.outputs.project }}:publish -P${{ needs.prepare.outputs.mod_version_parameter }}=${{ needs.prepare.outputs.mod_version }}
         env:
           MAVEN_URL: ${{ secrets.MAVEN_URL }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
