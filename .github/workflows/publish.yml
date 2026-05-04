@@ -2,11 +2,11 @@ name: publish.yml
 on:
   push:
     tags:
-      - 'vampirism/[0-9]*.[0-9]*.[0-9]*-[0-9]*.[0-9]*.[0-9]*-alpha.[0-9]*'
-      - 'faction/[0-9]*.[0-9]*.[0-9]*-[0-9]*.[0-9]*.[0-9]*-alpha.[0-9]*'
+      - 'vampirism/*'
+      - 'faction/*'
   release:
     types:
-      - published
+      - released
       - prereleased
 
 jobs:
@@ -15,6 +15,7 @@ jobs:
     outputs:
       mc_version: ${{ steps.extract.outputs.mc_version }}
       mod_version: ${{ steps.extract.outputs.mod_version }}
+      mod_version_parameter: ${{ steps.extract.outputs.mod_version_parameter }}
       project: ${{ steps.extract.outputs.project }}
       environment: ${{ steps.extract.outputs.environment }}
       jar_name: ${{ steps.extract.outputs.jar_name }}
@@ -23,7 +24,7 @@ jobs:
       - name: Extract mod version from tag
         id: extract
         run: |
-          if [[ ! $GITHUB_REF_NAME =~ ^(vampirism|faction)/[0-9]+\.[0-9]+(\.[0-9]+)?-[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta)\.[a-zA-Z0-9.]+)?$ ]]; then
+          if [[ ! $GITHUB_REF_NAME =~ ^(vampirism|faction)/[0-9]+\.[0-9]+(\.[0-9]+)?-[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|dev|test)\.[a-zA-Z0-9.]+)?$ ]]; then
             echo "::error::Invalid tag format: $GITHUB_REF_NAME. Expected <vampirism|faction>/<mc-version>-<mod-version>[-<status>.<identifier>]"
             exit 1
           fi
@@ -34,16 +35,21 @@ jobs:
           echo "mod_version=${version}" >> $GITHUB_OUTPUT
           if [[ $version =~ -(alpha|beta)\. ]]; then
             echo "environment=${project}/staging" >> $GITHUB_OUTPUT
+            echo "run_publish=true" >> $GITHUB_OUTPUT
+          elif [[ $version =~ -(dev|test)\. ]]; then
+            echo "environment=${project}/dev" >> $GITHUB_OUTPUT
+            echo "run_publish=false" >> $GITHUB_OUTPUT
           else
             echo "environment=${project}/release" >> $GITHUB_OUTPUT
+            echo "run_publish=true" >> $GITHUB_OUTPUT
           fi
           if [[ $project == 'vampirism' ]]; then
-            jar_name="Vampirism"
+            echo "jar_name=Vampirism" >> $GITHUB_OUTPUT
+            echo "mod_version_parameter=vampirism_version=${mod_version}" >> $GITHUB_OUTPUT
           else
-            jar_name="FactionApi"
+            echo "jar_name=FactionApi" >> $GITHUB_OUTPUT
+            echo "mod_version_parameter=factions_version=${mod_version}" >> $GITHUB_OUTPUT
           fi
-          echo "jar_name=${jar_name}" >> $GITHUB_OUTPUT
-          echo "run_publish=false" >> $GITHUB_OUTPUT
 
   build:
     needs: [ prepare ]
