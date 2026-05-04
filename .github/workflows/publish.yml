@@ -115,9 +115,9 @@ jobs:
       - name: Publish
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          curseforge-id: ${{ vars.cf_id }}
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          modrinth-id: ${{ vars.modrinth_id }}
+          modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: jars/projects/${{ needs.prepare.outputs.project }}/build/libs/${{ needs.prepare.outputs.jar_name }}-${{ needs.prepare.outputs.mod_version }}.jar
           name: ${{ needs.prepare.outputs.jar_name }} ${{ needs.prepare.outputs.mod_version }}
