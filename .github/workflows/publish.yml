@@ -2,8 +2,12 @@ name: publish.yml
 on:
   push:
     tags:
-      - 'vampirism/*'
-      - 'faction/*'
+      - 'vampirism/*-alpha.*'
+      - 'vampirism/*-dev.*'
+      - 'vampirism/*-test.*'
+      - 'faction/*-alpha.*'
+      - 'faction/*-dev.*'
+      - 'faction/*-test.*'
   release:
     types:
       - released
